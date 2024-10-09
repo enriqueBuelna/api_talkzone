@@ -1,6 +1,6 @@
 import { DataTypes, sql } from "@sequelize/core";
 import sequelize from "../../db/db.js";
-import { User } from "./usuario.model.js";
+import { User } from "./user.model.js";
 import { Topic } from "./topic.models.js";
 
 export const VoiceRoom = sequelize.define(
@@ -15,14 +15,15 @@ export const VoiceRoom = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
-    // host_user_id: {
-    //   type: DataTypes.STRING(32),
-    //   allowNull: false,
-    // },
-    // topic_id: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false,
-    // },
+    host_user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
     room_status: {
       type: DataTypes.ENUM("active", "closed"),
       defaultValue: "active",
@@ -35,6 +36,15 @@ export const VoiceRoom = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    topic_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Topic,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
   },
   {
     tableName: "Voice_rooms",
@@ -45,11 +55,19 @@ export const VoiceRoom = sequelize.define(
 // Definición de relaciones
 VoiceRoom.belongsTo(User, {
   foreignKeyConstraints: true,
-  foreignKey: "host_user_id",
-  targetKey: "id",
+  foreignKey: {
+    name:"host_user_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  },
 });
 VoiceRoom.belongsTo(Topic, {
   foreignKeyConstraints: true,
-  foreignKey: "topic_id",
-  targetKey: "id",
+  foreignKey: {
+    name:"topic_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  },
 });

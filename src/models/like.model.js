@@ -2,7 +2,8 @@ import { DataTypes, sql } from "@sequelize/core";
 import sequelize from "../../db/db.js";
 import { Post } from "./post.models.js";
 import { Comment } from "./comment.model.js";
-import { User } from "./usuario.model.js";
+import { User } from "./user.model.js";
+
 export const Like = sequelize.define(
   "Like",
   {
@@ -14,6 +15,33 @@ export const Like = sequelize.define(
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
+    },
+    post_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Post,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
+    comment_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Comment ,
+        key: "id",
+      },
+      onDelete: "CASCADE",
     },
   },
   {
@@ -39,18 +67,30 @@ export const Like = sequelize.define(
 
 Like.belongsTo(Post, {
   foreignKeyConstraints: true,
-  foreignKey: "post_id",
-  targetKey: "id",
+  foreignKey: {
+    name:"post_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  }
 });
 
 Like.belongsTo(User, {
   foreignKeyConstraints: true,
-  foreignKey: "user_id",
-  targetKey: "id",
+  foreignKey: {
+    name:"user_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  }
 });
 
 Like.belongsTo(Comment, {
   foreignKeyConstraints: true,
-  foreignKey: "comment_id",
-  targetKey: "id",
+  foreignKey: {
+    name:"comment_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  }
 });

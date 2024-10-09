@@ -57,6 +57,10 @@ export const User = sequelize.define('Users', {
   follower_count: {
     type: DataTypes.INTEGER,
     defaultValue: 0
+  },
+  is_online: {
+    type: DataTypes.ENUM('online','offline'),
+    defaultValue: 'offline'
   }
 }, {
   tableName: 'Users',

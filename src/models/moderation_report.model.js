@@ -1,6 +1,6 @@
 import { DataTypes } from "@sequelize/core";
 import sequelize from "../../db/db.js";
-import { User } from "./usuario.model.js"; // Asegúrate de tener el modelo User definido
+import { User } from "./user.model.js";
 
 export const ModerationReport = sequelize.define(
   "ModerationReport",
@@ -10,14 +10,24 @@ export const ModerationReport = sequelize.define(
       autoIncrement: true,
       primaryKey: true,
     },
-    // reporter_id: {
-    //   type: DataTypes.STRING(32),
-    //   allowNull: false,
-    // },
-    // reported_user_id: {
-    //   type: DataTypes.STRING(32),
-    //   allowNull: false,
-    // },
+    reporter_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
+    reported_user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
     post_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -60,15 +70,23 @@ export const ModerationReport = sequelize.define(
 // Definir las relaciones
 ModerationReport.belongsTo(User, {
   foreignKeyConstraints: true,
-  foreignKey: "reporter_id",
-  targetKey: "id",
+  foreignKey: {
+    name: "reporter_id",
+    target: "id",
+    allowNull: false,
+    onDelete: "CASCADE",
+  },
   as: "reporter",
 });
 
 ModerationReport.belongsTo(User, {
   foreignKeyConstraints: true,
-  foreignKey: "reported_user_id",
-  targetKey: "id",
+  foreignKey: {
+    name: "reported_user_id",
+    target: "id",
+    allowNull: false,
+    onDelete: "CASCADE",
+  },
   as: "reportedUser",
 });
 

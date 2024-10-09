@@ -5,7 +5,26 @@ import { Tag } from "./tag.models.js";
 
 export const PostTag = sequelize.define(
   "PostTag",
-  {},
+  {
+    post_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Post,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
+    tag_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Tag,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    }
+  },
   {
     tableName: "PostTags", // Nombre de la tabla en la base de datos
     timestamps: false,
@@ -14,13 +33,21 @@ export const PostTag = sequelize.define(
 
 // Definir las relaciones
 PostTag.belongsTo(Post, {
-  foreignKey: "post_id",
-  targetKey: "id",
+  foreignKey: {
+    name:"post_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  },
   foreignKeyConstraints: true,
 });
 
 PostTag.belongsTo(Tag, {
-  foreignKey: "tag_id",
-  targetKey: "id",
+  foreignKey: {
+    name:"tag_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  },
   foreignKeyConstraints: true,
 });

@@ -1,7 +1,8 @@
 import { DataTypes, sql } from "@sequelize/core";
 import sequelize from "../../db/db.js";
 
-import { User } from "./usuario.model.js";
+import { User } from "./user.model.js";
+
 
 export const Follower = sequelize.define(
   "Follower",
@@ -14,6 +15,24 @@ export const Follower = sequelize.define(
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
+    },
+    follower_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
+    followed_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "CASCADE",
     },
   },
   {
@@ -32,13 +51,21 @@ export const Follower = sequelize.define(
 Follower.belongsTo(User, {
   as:"followerId",
   foreignKeyConstraints: true,
-  foreignKey: "follower_id",
-  targetKey: "id",
+  foreignKey: {
+    name:"follower_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  }
 });
 
 Follower.belongsTo(User, {
   as:"followedId",
-  foreignKey: "followed_id",
-  targetKey: "id",
+  foreignKey: {
+    name:"followed_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  },
   foreignKeyConstraints:true
 });

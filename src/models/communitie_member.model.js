@@ -1,7 +1,8 @@
 import { DataTypes } from "@sequelize/core";
 import sequelize from "../../db/db.js";
 import { Community } from "./communitie.model.js";
-import { User } from "./usuario.model.js";
+import { User } from "./user.model.js";
+
 
 export const CommunityMember = sequelize.define(
   "CommunityMember",
@@ -19,6 +20,24 @@ export const CommunityMember = sequelize.define(
       type: DataTypes.ENUM("member", "admin"),
       defaultValue: "member",
     },
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
+    group_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Community,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
   },
   {
     tableName: "Communities_members",
@@ -35,12 +54,20 @@ export const CommunityMember = sequelize.define(
 // // Relaciones
 CommunityMember.belongsTo(Community, {
   foreignKeyConstraints: true,
-  foreignKey: "group_id",
-  targetKey: "id",
+  foreignKey: {
+    name:"group_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  }
 });
 
 CommunityMember.belongsTo(User, {
   foreignKeyConstraints: true,
-  foreignKey: "user_id",
-  targetKey: "id",
+  foreignKey: {
+    name:"user_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  }
 });

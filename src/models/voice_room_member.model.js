@@ -1,16 +1,25 @@
 import { DataTypes, sql } from "@sequelize/core";
 import sequelize from "../../db/db.js";
+import { VoiceRoom } from "./voice_rooms.models.js";
 import { User } from "./user.model.js";
-
-export const Message = sequelize.define(
-  "Message",
+export const VoiceRoomMember = sequelize.define(
+  "VoiceRoomMember",
   {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    sender_id: {
+    room_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: VoiceRoom,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
+    user_id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -19,55 +28,33 @@ export const Message = sequelize.define(
       },
       onDelete: "CASCADE",
     },
-    receiver_id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: User,
-        key: "id",
-      },
-      onDelete: "CASCADE",
-    },
-    content: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    media_url: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    sent_at: {
+    joined_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
+      allowNull: false,
     },
-    is_read: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
+    left_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
   },
   {
-    tableName: "Messages",
+    tableName: "Voice_room_members",
     timestamps: false,
   }
 );
 
-Message.belongsTo(User, {
-  as: "senderUserMessage",
+// Definición de relaciones
+VoiceRoomMember.belongsTo(VoiceRoom, {
   foreignKey: {
-    name: "sender_id",
-    target: "id",
-    allowNull: false,
+    name: "room_id",
     onDelete: "CASCADE",
   },
-  foreignKeyConstraints: true,
 });
-Message.belongsTo(User, {
-  as: "receiverUserMessage",
+
+VoiceRoomMember.belongsTo(User, {
   foreignKey: {
-    name: "receiver_id",
-    target: "id",
-    allowNull: false,
+    name: "user_id",
     onDelete: "CASCADE",
   },
-  foreignKeyConstraints: true,
 });

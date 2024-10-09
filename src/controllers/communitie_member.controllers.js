@@ -1,5 +1,5 @@
 import { Community } from "../models/communitie.model.js";
-import { User } from "../models/usuario.model.js";
+import { User } from "../models/user.model.js";
 import { CommunityMember } from "../models/communitie_member.model.js";
 
 // Agregar un usuario a una comunidad

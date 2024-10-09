@@ -1,5 +1,5 @@
 import { Notification } from "../models/notification.model.js";
-import { User } from "../models/usuario.model.js";
+import { User } from "../models/user.model.js";
 // Crear una nueva notificación
 export const createNotification = async (req, res) => {
   const { user_id, sender_id, type, related_post_id, related_comment_id, related_message_id } = req.body;

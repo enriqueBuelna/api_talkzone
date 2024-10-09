@@ -15,6 +15,24 @@ export const UserPreferenceTag = sequelize.define(
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
+    user_preference_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: UserPreference,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
+    tag_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Tag,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
   },
   {
     tableName: "User_preference_tags", // Nombre de la tabla en la base de datos
@@ -29,12 +47,22 @@ export const UserPreferenceTag = sequelize.define(
 );
 // Definir las relaciones
 UserPreferenceTag.belongsTo(UserPreference, {
-  foreignKey: "user_preference_id",
-  targetKey: "id",
+  foreignKey: { name: 'user_preference_id', allowNull: false, onDelete: 'CASCADE' },
+  foreignKeyConstraints: true,
+  hooks: false,
+  as: 'userPreferences',
+  name: { plural: 'userPreferences', singular: 'userPreference' }
+})
+UserPreferenceTag.belongsTo(Tag, {
+  foreignKey: {
+    name: "tag_id",
+    allowNull: false,
+    onDelete: 'CASCADE', // Elimina UserPreferenceTag si se elimina Tag
+  },
   foreignKeyConstraints: true,
 });
-UserPreferenceTag.belongsTo(Tag, {
-  foreignKey: "tag_id",
-  targetKey: "id",
-  foreignKeyConstraints: true,
+
+// Relación con la tabla UserPreferenceTag
+UserPreference.hasMany(UserPreferenceTag, {
+  foreignKey: "user_preference_id"
 });

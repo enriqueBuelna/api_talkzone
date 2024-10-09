@@ -1,5 +1,5 @@
 import { Comment } from "../models/comment.model.js";
-import { User } from "../models/usuario.model.js";
+import { User } from "../models/user.model.js";
 import { Post } from "../models/post.models.js";
 
 // Función para crear un nuevo comentario

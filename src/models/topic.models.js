@@ -30,7 +30,12 @@ export const Topic = sequelize.define('Topic', {
 // Topic.hasMany(Topic);
 Topic.belongsTo(Topic, {
   as: 'Current',
-  foreignKey: 'topic_id',
+  foreignKey: {
+    name:"topic_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  },
   foreignKeyConstraints: true,
   unique: true
 });

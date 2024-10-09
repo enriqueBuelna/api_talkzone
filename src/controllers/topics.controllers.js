@@ -1,6 +1,8 @@
 import { Topic } from "../models/topic.models.js";
 import { Op } from "sequelize";
 
+//añadir muschos topics una sola vez
+//solo admin o moderador
 export const bulksTopic = async (req, res) => {
   try {
       let topicsData = req.body;
@@ -11,7 +13,8 @@ export const bulksTopic = async (req, res) => {
       res.status(500).json({ message: 'Error al agregar temas', error });
   }
 };
-
+//añadir un tema, si tiene topic_id, es tema secundario
+//solo admin o moderador
 export const addTopic = async (req, res) => {
   const { topic_name, topic_id } = req.body;
   try {
@@ -40,7 +43,8 @@ export const addTopic = async (req, res) => {
     res.sendStatus(500);
   }
 };
-
+//añadir muschos topics una sola vez
+//solo admin o moderador
 export const bulkSecondsTopic = async (req, res) => {
   try {
     const { id, topics } = req.body;
@@ -76,6 +80,7 @@ export const bulkSecondsTopic = async (req, res) => {
   }
 };
 
+//todos lo pueden hacer
 export const getPrincipalTopic = async (req, res) => {
   try {
     const mainTopics = await Topic.findAll({
@@ -89,7 +94,7 @@ export const getPrincipalTopic = async (req, res) => {
 
   }
 };
-
+//todos lo pueden hacer
 export const getSecondTopic = async (req, res) => {
   try {
     const mainTopics = await Topic.findAll({

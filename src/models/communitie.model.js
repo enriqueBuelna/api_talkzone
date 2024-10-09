@@ -1,6 +1,6 @@
-import { DataTypes} from "@sequelize/core";
+import { DataTypes } from "@sequelize/core";
 import sequelize from "../../db/db.js";
-import { User } from "./usuario.model.js";
+import { User } from "./user.model.js";
 
 export const Community = sequelize.define(
   "Community",
@@ -18,10 +18,15 @@ export const Community = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    //   creator_id: {
-    //     type: DataTypes.STRING(32),
-    //     allowNull: false,
-    //   },
+    creator_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
@@ -43,7 +48,11 @@ export const Community = sequelize.define(
 
 // Relación con la tabla de usuarios (creador de la comunidad)
 Community.belongsTo(User, {
-  foreignKey: "creator_id",
-  targetKey: "id",
+  foreignKey: {
+    name: "creator_id",
+    target: "id",
+    allowNull: false,
+    onDelete: "CASCADE",
+  },
   foreignKeyConstraints: true,
 });

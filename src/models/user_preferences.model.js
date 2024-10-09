@@ -1,6 +1,7 @@
 import { DataTypes, sql } from "@sequelize/core";
 import sequelize from "../../db/db.js";
-import { User } from "./usuario.model.js";
+import { User } from "./user.model.js";
+
 import { Topic } from "./topic.models.js";
 
 export const UserPreference = sequelize.define(
@@ -19,6 +20,24 @@ export const UserPreference = sequelize.define(
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
+    topic_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Topic,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
   },
   {
     tableName: "User_preferences",
@@ -32,16 +51,25 @@ export const UserPreference = sequelize.define(
   }
 );
 
+
 // Relación con la tabla Users
 UserPreference.belongsTo(User, {
-  foreignKey: "user_id",
-  targetKey: "id",
+  foreignKey: {
+    name:"user_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  },
   foreignKeyConstraints: true,
 });
 
 // Relación con la tabla Topics
 UserPreference.belongsTo(Topic, {
-  foreignKey: "topic_id",
-  targetKey: "id",
+  foreignKey: {
+    name:"topic_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  },
   foreignKeyConstraints: true,
 });

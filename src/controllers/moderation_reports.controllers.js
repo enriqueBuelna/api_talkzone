@@ -1,5 +1,5 @@
 import { ModerationReport } from "../models/moderation_report.model.js";
-import { User } from "../models/usuario.model.js";
+import { User } from "../models/user.model.js";
 
 export const createModerationReport = async (req, res) => {
     const { reporter_id, reported_user_id, post_id, comment_id, room_id, message_id, reason } = req.body;

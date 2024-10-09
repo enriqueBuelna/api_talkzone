@@ -1,6 +1,6 @@
 import { DataTypes, sql } from "@sequelize/core";
 import sequelize from "../../db/db.js";
-import { User } from "./usuario.model.js";
+import { User } from "./user.model.js";
 import { Topic } from "./topic.models.js";
 
 export const Post = sequelize.define(
@@ -11,14 +11,6 @@ export const Post = sequelize.define(
       autoIncrement: true,
       primaryKey: true,
     },
-    // user_id: {
-    //   type: DataTypes.STRING(32),
-    //   allowNull: false,
-    //   references: {
-    //     model: "Users", // Nombre de la tabla de usuarios
-    //     key: "id",
-    //   },
-    // },
     content: {
       type: DataTypes.TEXT,
       allowNull: false,
@@ -49,23 +41,28 @@ export const Post = sequelize.define(
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
-    // shared_post_id: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: true,
-    // },
     is_pinned: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    // topic_id: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false,
-    //   references: {
-    //     model: "Topics", // Nombre de la tabla Topics
-    //     key: "id",
-    //   },
-    //   onDelete: "CASCADE",
-    // },
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
+    topic_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Topic,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
   },
   {
     tableName: "Posts", // Nombre de la tabla en la base de datos
@@ -75,19 +72,45 @@ export const Post = sequelize.define(
 
 // // Definir las relaciones
 Post.belongsTo(User, {
+  as: 'userss',
   foreignKeyConstraints: true,
-  foreignKey: "user_id",
+  foreignKey: {
+    name:"user_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  },
 });
 
 Post.belongsTo(Topic, {
   as: 'Current',
   foreignKeyConstraints: true,
-  foreignKey: "topic_id"
+  foreignKey: {
+    name:"topic_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  }
 });
 
 // // Si tienes una relación de posts compartidos
 Post.belongsTo(Post, {
   as: "SharedPost",
-  foreignKey: "shared_post_id",
+  foreignKey: {
+    name:"shared_post_id",
+    target:"id",
+    allowNull:true,
+    onDelete:"CASCADE"
+  },
   foreignKeyConstraints: true
+});
+
+
+//RELACIONES HAS MANY
+
+User.hasMany(Post, {
+  foreignKey: {
+    name:"user_id",
+    onDelete: "CASCADE"
+  }
 });

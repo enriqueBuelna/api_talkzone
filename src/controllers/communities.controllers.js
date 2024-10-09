@@ -1,4 +1,4 @@
-import { User } from "../models/usuario.model.js";
+import { User } from "../models/user.model.js";
 import { Community } from "../models/communitie.model.js";
 
 // Crear una nueva comunidad

@@ -1,5 +1,6 @@
 import { Post } from "../models/post.models.js";
 import { Tag } from "../models/tag.models.js";
+import {PostTag} from "../models/post_tag.model.js";
 
 
 // Crear una relación entre un post y un tag

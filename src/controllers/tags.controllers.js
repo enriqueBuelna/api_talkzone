@@ -22,7 +22,13 @@ export const addTag = async (req, res) => {
       tag_name,
       topic_id,
     });
-    res.sendStatus(200);
+    
+    const returnValue = {
+      id: newTag.id,
+      tag_name: newTag.tag_name
+    }
+
+    res.status(201).json(returnValue);
   } catch (error) {
     console.log(error);
     res.sendStatus(500);
