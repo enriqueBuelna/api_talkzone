@@ -56,11 +56,13 @@ export const VoiceRoom = sequelize.define(
 VoiceRoom.belongsTo(User, {
   foreignKeyConstraints: true,
   foreignKey: {
+    
     name:"host_user_id",
     target:"id",
     allowNull:false,
     onDelete:"CASCADE"
   },
+  as:"host_user",
 });
 VoiceRoom.belongsTo(Topic, {
   foreignKeyConstraints: true,
@@ -71,3 +73,4 @@ VoiceRoom.belongsTo(Topic, {
     onDelete:"CASCADE"
   },
 });
+

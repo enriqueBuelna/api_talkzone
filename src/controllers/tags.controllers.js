@@ -3,6 +3,7 @@ import { Tag } from "../models/tag.models.js";
 
 export const addTag = async (req, res) => {
   const { tag_name, topic_id } = req.body;
+  console.log(tag_name, topic_id);
   try {
     if (!tag_name) {
       return res
@@ -22,15 +23,30 @@ export const addTag = async (req, res) => {
       tag_name,
       topic_id,
     });
-    
+
     const returnValue = {
       id: newTag.id,
-      tag_name: newTag.tag_name
-    }
+      tag_name: newTag.tag_name,
+      topic_id: newTag.topic_id
+    };
 
-    res.status(201).json(returnValue);
+    res.status(200).json(returnValue);
   } catch (error) {
     console.log(error);
     res.sendStatus(500);
   }
+};
+
+export const getAllTag = async (req, res) => {
+  try {
+    const { topic_id } = req.query;
+    const allTag = await Tag.findAll({
+      where: {
+        topic_id,
+      },
+      attributes: ["topic_id", "tag_name", "id"], // Solo selecciona topic_id y topic_name
+    });
+
+    res.status(200).json(allTag); // Código 200 para éxito
+  } catch (error) {}
 };

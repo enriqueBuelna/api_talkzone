@@ -1,6 +1,9 @@
 import { User } from "../models/user.model.js";
 import { Topic } from "../models/topic.models.js";
 import { UserPreference } from "../models/user_preferences.model.js";
+import { createUserPreferenceTag } from "./user_preferences_tag.services.js";
+import { Tag } from "../models/tag.models.js";
+import { UserPreferenceTag } from "../models/user_preference_tag.model.js";
 
 // Servicio para crear una preferencia de usuario
 export const createUserPreference = async (user_id, topic_id, type) => {
@@ -40,7 +43,23 @@ export const createUserPreference = async (user_id, topic_id, type) => {
 export const getUserPreferences = async (user_id) => {
   const preferences = await UserPreference.findAll({
     where: { user_id },
-    include: [Topic], // Incluir el tema asociado
+    include: [
+      {
+        model: Topic,
+        attributes: ["id", "topic_name"],
+      },
+      {
+        model: UserPreferenceTag,
+        include: [
+          {
+            model: Tag,
+            attributes: ["tag_name"],
+          },
+        ],
+        attributes: ["id"],
+      },
+    ], // Incluir el tema asociado
+    attributes: ["id","type"],
   });
 
   if (!preferences.length) {

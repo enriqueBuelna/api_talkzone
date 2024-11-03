@@ -7,25 +7,25 @@ export const createEmailVerification = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const existingVerification = await VerificationEmail.findOne({
-      where: { email },
-    });
+    // const existingVerification = await VerificationEmail.findOne({
+    //   where: { email },
+    // });
   
-    // Si existe, lo eliminamos
-    if (existingVerification) {
-      await VerificationEmail.destroy({
-        where: { email },
-      });
-    }
+    // // Si existe, lo eliminamos
+    // if (existingVerification) {
+    //   await VerificationEmail.destroy({
+    //     where: { email },
+    //   });
+    // }
   
-    // Generar un código de verificación de 6 dígitos
+    // // Generar un código de verificación de 6 dígitos
 
-    // Crear una nueva verificación en la base de datos
-    const nuevaVerificacion = await VerificationEmail.create({
-      email,
-      codigo_verificacion: await sendCodeEmail(email),
-      expira_en: new Date(Date.now() + 60 * 60 * 1000), // Establecer la expiración en 1 hora
-    });
+    // // Crear una nueva verificación en la base de datos
+    // const nuevaVerificacion = await VerificationEmail.create({
+    //   email,
+    //   codigo_verificacion: await sendCodeEmail(email),
+    //   expira_en: new Date(Date.now() + 60 * 60 * 1000), // Establecer la expiración en 1 hora
+    // });
 
     // Aquí puedes enviar el código al email del usuario utilizando algún servicio de email
     // Ejemplo: await enviaremail(email, codigoVerificacion);
@@ -45,7 +45,7 @@ export const createEmailVerification = async (req, res) => {
 export const verifyCode = async (req, res) => {
   try {
     const { email, codigo_verificacion } = req.body;
-
+    console.log(email, codigo_verificacion);
     // Buscar la verificación correspondiente
     const verificacion = await VerificationEmail.findOne({
       where: {

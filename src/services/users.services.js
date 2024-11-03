@@ -8,16 +8,19 @@ import { createUserPreferenceTag } from "./user_preferences_tag.services.js";
 import { UserPreferenceTag } from "../models/user_preference_tag.model.js";
 import { Topic } from "../models/topic.models.js";
 import { Tag } from "../models/tag.models.js";
-
+import { sendCodeEmailService } from "./email.services.js";
+import { Follower } from "../models/follower.model.js";
+import Op from "sequelize";
 // Servicio para registrar un usuario
 export const registerUserService = async ({
   username,
   email,
-  hashedPassword,
+  password,
   date_of_birth,
   gender,
 }) => {
-  if (!username || !hashedPassword || !email || !date_of_birth || !gender) {
+  console.log(username, email, password, date_of_birth, gender);
+  if (!username || !password || !email || !date_of_birth || !gender) {
     throw new Error("Todos los campos son obligatorios");
   }
 
@@ -28,7 +31,7 @@ export const registerUserService = async ({
   }
 
   // Hash de la contraseña
-  const hashedPasswordd = await bcrypt.hash(hashedPassword, 10);
+  const hashedPasswordd = await bcrypt.hash(password, 10);
 
   // Crear el nuevo usuario
   const nuevoUsuario = await User.create({
@@ -69,6 +72,7 @@ export const finishProfileService = async ({
   user_preferences_tag,
 }) => {
   try {
+    console.log(user_preferences);
     const user = await User.findByPk(user_id);
 
     if (!user) {
@@ -85,14 +89,11 @@ export const finishProfileService = async ({
           preference.type
         );
 
-        // Filtrar las tags que coinciden con esta preferencia
-        const tags = user_preferences_tag.filter(
-          (tag) => tag.index_preference === preference.index
-        );
-
         // Crear las tags usando el id de la preferencia
         await Promise.all(
-          tags.map((tag) => createUserPreferenceTag(id, tag.tag_id))
+          preference.tag.map(async (tag) => {
+            await createUserPreferenceTag(id, tag.id);
+          })
         );
 
         return id;
@@ -114,15 +115,27 @@ export const finishProfileService = async ({
 export const validatePreRegisterService = async ({ email, username }) => {
   const emailExists = await User.findOne({ where: { email } });
   if (emailExists) {
-    throw new Error("El correo ya está en uso");
+    return "El correo ya está en uso";
   }
 
   const usernameExists = await User.findOne({ where: { username } });
   if (usernameExists) {
-    throw new Error("El nombre de usuario ya está en uso");
+    return "El nombre de usuario ya está en uso";
   }
 
-  return "El correo y el nombre de usuario están disponibles";
+  await sendCodeEmailService(email, "Verificación de correo electrónico");
+  return "Todo bien";
+};
+
+export const sendEmailPasswordChangeService = async ({ email }) => {
+  const emailExists = await User.findOne({ where: { email } });
+
+  if (!emailExists) {
+    return "Ese correo electronico no esta registrado";
+  }
+
+  await sendCodeEmailService(email, "Restablecimiento de contraseña");
+  return "Todo bien";
 };
 
 // Servicio para obtener todos los usuarios
@@ -180,6 +193,18 @@ export const getUserOnline = async (id, option) => {
   }
 };
 
+export const getBasicInfoo = async (user_id) => {
+  try {
+    const user = await User.findOne({
+      where: { id: user_id },
+      attributes: ["id", "username", "profile_picture", "gender"],
+    });
+    return user;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 //obtener las preferencias del usuario completa
 
 export const getUserPreferencess = async (userId) => {
@@ -199,8 +224,10 @@ export const getUserPreferencess = async (userId) => {
               attributes: ["tag_name"], // Solo selecciona el nombre de las etiquetas
             },
           ],
+          attributes: ["tag_id"],
         },
       ],
+      attributes: ["type", "topic_id"],
     });
 
     if (userPreferences.length === 0) {
@@ -209,5 +236,57 @@ export const getUserPreferencess = async (userId) => {
     return userPreferences;
   } catch (error) {
     console.error(error);
+  }
+};
+
+//getUserProfileInformation
+
+export const getUserProileInformation = async (user_id) => {
+  try {
+    const user = await User.findOne({
+      where: { id: user_id },
+      attributes: ["username", "profile_picture", "is_online", "gender"],
+      raw: true,
+    });
+    return user;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getFollowersFollowedd = async (user_id) => {
+  try {
+    // const followersFollowed = await
+    const userFollowersAndFollowing = await User.findAll({
+      include: [
+        {
+          model: Follower,
+          as: "following", // Usuarios que el usuario sigue
+          where: { follower_id: user_id },
+          attributes: [],
+          required: false,
+        },
+        {
+          model: Follower,
+          as: "followers", // Usuarios que siguen al usuario
+          where: { followed_id: user_id },
+          attributes: [],
+          required: false,
+        },
+      ],
+      attributes: ["id", "username", "profile_picture", "is_online", "gender"],
+      raw: true,
+    });
+
+    // Filtrar usuarios únicos
+    const uniqueUsers = Array.from(
+      new Set(userFollowersAndFollowing.map((user) => user.id))
+    )
+      .map((id) => userFollowersAndFollowing.find((user) => user.id === id))
+      .filter((user) => user.id !== user_id); // Excluir el usuario actual
+
+    return uniqueUsers;
+  } catch (error) {
+    console.log(error);
   }
 };

@@ -3,7 +3,6 @@ import sequelize from "../../db/db.js";
 
 import { User } from "./user.model.js";
 
-
 export const Follower = sequelize.define(
   "Follower",
   {
@@ -49,23 +48,29 @@ export const Follower = sequelize.define(
 
 // Definir relaciones
 Follower.belongsTo(User, {
-  as:"followerId",
+  as: "follower", // Usuario que sigue a otro usuario
   foreignKeyConstraints: true,
   foreignKey: {
-    name:"follower_id",
-    target:"id",
-    allowNull:false,
-    onDelete:"CASCADE"
-  }
+    name: "follower_id",
+    allowNull: false,
+    onDelete: "CASCADE",
+  },
 });
 
 Follower.belongsTo(User, {
-  as:"followedId",
+  as: "followed", // Usuario que es seguido por otro usuario
   foreignKey: {
-    name:"followed_id",
-    target:"id",
-    allowNull:false,
-    onDelete:"CASCADE"
+    name: "followed_id",
+    allowNull: false,
+    onDelete: "CASCADE",
   },
-  foreignKeyConstraints:true
+  foreignKeyConstraints: true,
 });
+
+User.hasMany(Follower, { foreignKey: "follower_id", as: "following" });
+User.hasMany(Follower, { foreignKey: "follower_id", as: "followers" });
+
+
+
+// User.hasMany(Follower, { foreignKey: "follower_id", as: "following" });
+// User.hasMany(Follower, { foreignKey: "followed_id", as: "followers" });

@@ -5,26 +5,30 @@ import {
 import { users } from "./principalSocket.socket.js";
 
 export const messagesSocket = async (socket, io) => {
-  socket.on(
-    "sendMessage",
-    async (sender_id, receiver_id, content, media_url) => {
-      try {
-        await createMessage(sender_id, receiver_id, content, null);
+  socket.on("sendMessage", async (message) => {
+    try {
+      let { sender_id, receiver_id, content, media_url } = message;
+      let newMessage = await createMessage(
+        sender_id,
+        receiver_id,
+        content,
+        null
+      );
 
-        const receiverSocketId = users[receiver_id]; // Obtener el ID del socket del receptor
 
-        // Emitir el mensaje al remitente
-        socket.emit("chatMessage", content);
+      const allSocketIds = [
+        ...(users[sender_id] || []),
+        ...(users[receiver_id] || []),
+      ];
 
-        // Emitir el mensaje al receptor
-        if (receiverSocketId) {
-          io.to(receiverSocketId).emit("chatMessage", content);
-        }
-      } catch (error) {
-        console.error("Error al enviar mensaje:", error);
+      // Emitir el mensaje a todas las conexiones
+      for (const id of allSocketIds) {
+        io.to(id).emit("chatMessage", newMessage);
       }
+    } catch (error) {
+      console.error("Error al enviar mensaje:", error);
     }
-  );
+  });
 
   socket.on("getMessages", async (sender_id, receiver_id) => {
     try {

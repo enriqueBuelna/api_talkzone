@@ -53,15 +53,14 @@ export const getFollowing = async (id) => {
     include: [
       {
         model: User,
-        as: "followedId", // Asegúrate de que este alias coincida con tu definición de relación
+        as: "followed", // Asegúrate de que este alias coincida con tu definición de relación
         attributes: ["id", "username", "profile_picture"], // Selecciona solo los campos deseados
       },
     ],
   });
-
+  
   // Mapear los resultados para obtener solo la información necesaria
-  const usersFollowing = following.map((follow) => follow.followedId);
-
+  const usersFollowing = following.map((follow) => follow.followed);
   return usersFollowing;
 };
 

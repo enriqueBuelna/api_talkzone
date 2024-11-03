@@ -33,6 +33,10 @@ export const User = sequelize.define('Users', {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
   },
+  is_profile_complete: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
   last_login: {
     type: DataTypes.DATE,
     allowNull: true,

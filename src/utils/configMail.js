@@ -11,14 +11,14 @@ const transporter = createTransport({
   },
 });
 
-export const sendCodeEmail = async (correoDestino) => {
+export const sendCodeEmail = async (correoDestino, titulo) => {
   const codigoVerificacion = generarCodigoVerificacion();
 
   // Configuración del correo
   const mailOptions = {
     from: process.env.EMAIL,
     to: correoDestino,
-    subject: "Verificación de correo electrónico",
+    subject: `${titulo}`,
     text: `Tu código de verificación es: ${codigoVerificacion}`,
     html: `<p>Tu código de verificación es: <strong>${codigoVerificacion}</strong></p>`, // Puedes enviar un HTML más bonito
   };

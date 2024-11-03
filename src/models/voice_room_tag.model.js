@@ -1,9 +1,9 @@
-import { DataTypes, sql } from "@sequelize/core";
+import { DataTypes } from "@sequelize/core";
 import sequelize from "../../db/db.js";
 import { VoiceRoom } from "./voice_rooms.models.js";
-import { User } from "./user.model.js";
-export const VoiceRoomMember = sequelize.define(
-  "VoiceRoomMember",
+import { Tag } from "./tag.models.js";
+export const VoiceRoomTag = sequelize.define(
+  "VoiceRoomTag",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -19,60 +19,52 @@ export const VoiceRoomMember = sequelize.define(
       },
       onDelete: "CASCADE",
     },
-    user_id: {
-      type: DataTypes.UUID,
+    tag_id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: User,
+        model: Tag,
         key: "id",
       },
       onDelete: "CASCADE",
     },
-    joined_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      allowNull: false,
-    },
-    left_at: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
   },
   {
-    tableName: "Voice_room_members",
+    tableName: "Voice_room_tags",
     timestamps: false,
   }
 );
 
 // Definición de relaciones
-VoiceRoomMember.belongsTo(VoiceRoom, {
-  as:"voice_room_member_to_voice_room",
+VoiceRoomTag.belongsTo(VoiceRoom, {
+  as: "voice_room_tag_to_voice_room",
   foreignKey: {
     name: "room_id",
     onDelete: "CASCADE",
   },
 });
 
-VoiceRoomMember.belongsTo(User, {
-  as:"user_information_voice_room",
+VoiceRoomTag.belongsTo(Tag, {
+  as: "voice_room_tag_to_tag",
   foreignKey: {
-    name: "user_id",
+    name: "tag_id",
     onDelete: "CASCADE",
   },
 });
 
-VoiceRoom.hasMany(VoiceRoomMember, {
-  as:"users_of_voice_room",
+//has many
+VoiceRoom.hasMany(VoiceRoomTag, {
+  as: "voice_room_to_voice_room_tag",
   foreignKey: {
     name: "room_id",
     onDelete: "CASCADE",
   },
-})
+});
 
-User.hasMany(VoiceRoomMember, {
-  as:"user_to_voice_room_member",
+Tag.hasMany(VoiceRoomTag, {
+  as: "tag_to_voice_room_tag",
   foreignKey: {
-    name: "user_id",
+    name: "tag_id",
     onDelete: "CASCADE",
   },
-})
+});

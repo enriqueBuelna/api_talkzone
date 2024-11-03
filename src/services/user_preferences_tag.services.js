@@ -18,7 +18,7 @@ export const getUserPreferencesTag = async (user_preference_id) => {
 export const createUserPreferenceTag = async (user_preference_id, tag_id) => {
   const user = await UserPreference.findByPk(user_preference_id);
   const tag = await Tag.findByPk(tag_id);
-
+  console.log(user_preference_id, tag_id);
   const existingPreference = await UserPreferenceTag.findOne({
     where: {
       user_preference_id,

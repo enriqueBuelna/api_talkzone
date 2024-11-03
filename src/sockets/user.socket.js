@@ -5,13 +5,17 @@ import { users } from "./principalSocket.socket.js";  // Importar el objeto `use
 export const userGetIn = (socket) => {
   socket.on("getUsers", async (id_username) => {
     // Asignar el id del usuario al objeto `users`
-    users[id_username] = socket.id;  // Guardar el id del usuario con su socket.id
-    
+    console.log(id_username);
+    if (!users[id_username]) {
+      users[id_username] = []; // Inicializa el array si no existe
+    }
+
+    users[id_username].push(socket.id); // Agrega el socket.id al array
+    console.log(users[id_username]);
     //aqui podria hacer un endpoint para decir que si estoy online
     await changeOnline(id_username, 'online');
     
     //obtener a mis amigos
-    socket.emit("createUserMessage", await getFollowing(id_username));
-
+    // socket.emit("createUserMessage", await getFollowing(id_username));
   });
 };

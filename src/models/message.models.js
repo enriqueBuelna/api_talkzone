@@ -1,7 +1,8 @@
 import { DataTypes, sql } from "@sequelize/core";
 import sequelize from "../../db/db.js";
 import { User } from "./user.model.js";
-
+// import { Chat } from "./chat.model.js";
+//ocupo añadir un campo mas
 export const Message = sequelize.define(
   "Message",
   {
@@ -44,10 +45,22 @@ export const Message = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    conversation_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    }
   },
   {
     tableName: "Messages",
     timestamps: false,
+  },
+  {
+    indexes: [
+      {
+        unique: false,
+        fields: ["sender_id", "receiver_id"], // Índice compuesto para mejorar búsquedas
+      },
+    ],
   }
 );
 
@@ -71,3 +84,8 @@ Message.belongsTo(User, {
   },
   foreignKeyConstraints: true,
 });
+
+// Message.hasMany(Chat, {
+//   foreignKey: "conversation_id",
+//   as:"conversation"
+// });

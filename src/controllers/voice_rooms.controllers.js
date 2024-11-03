@@ -1,22 +1,21 @@
 import { VoiceRoom } from "../models/voice_rooms.models.js";
+import {
+  createVoiceRoomService,
+  getVoiceRoomByIdService,
+  getVoiceRooms,
+} from "../services/voice_room.service.js";
 // Controlador para crear una sala de voz
 export const createVoiceRoom = async (req, res) => {
-  const { room_name, host_user_id, topic_id } = req.body;
+  const { room_name, host_user_id, topic_id, tags } = req.body;
 
   try {
     // Validar que se han proporcionado los campos requeridos
-    if (!room_name || !host_user_id || !topic_id) {
-      return res
-        .status(400)
-        .json({ error: "room_name, host_user_id y topic_id son requeridos" });
-    }
-
-    // Crear la sala de voz
-    const newVoiceRoom = await VoiceRoom.create({
+    const newVoiceRoom = await createVoiceRoomService(
       room_name,
-      host_user_id,
       topic_id,
-    });
+      host_user_id,
+      tags
+    );
 
     return res.status(201).json(newVoiceRoom);
   } catch (error) {
@@ -54,7 +53,9 @@ export const updateVoiceRoom = async (req, res) => {
     return res.status(200).json(voiceRoom);
   } catch (error) {
     console.error("Error al actualizar la sala de voz:", error);
-    return res.status(500).json({ error: "Error al actualizar la sala de voz" });
+    return res
+      .status(500)
+      .json({ error: "Error al actualizar la sala de voz" });
   }
 };
 
@@ -70,8 +71,8 @@ export const getVoiceRoom = async (req, res) => {
     // Buscar la sala de voz
     const voiceRoom = await VoiceRoom.findByPk(room_id, {
       include: [
-        { model: User, as: 'host_user' }, // Incluye los detalles del usuario que es el host
-        { model: Topic },                 // Incluye los detalles del tema asociado
+        { model: User, as: "host_user" }, // Incluye los detalles del usuario que es el host
+        { model: Topic }, // Incluye los detalles del tema asociado
       ],
     });
 
@@ -87,6 +88,17 @@ export const getVoiceRoom = async (req, res) => {
   }
 };
 
+export const getVoiceRoomById = async (req, res) => {
+  let { room_id } = req.params;
+  console.log(room_id);
+  try {
+    let results = await getVoiceRoomByIdService(room_id);
+    res.status(201).json(results);
+  } catch (error) {
+    console.error("Error al obtener la sala de voz:", error);
+    return res.status(500).json({ error: "Error al obtener la sala de voz" });
+  }
+};
 
 export const deleteVoiceRoom = async (req, res) => {
   const { room_id } = req.params;
@@ -108,9 +120,21 @@ export const deleteVoiceRoom = async (req, res) => {
     // Eliminar la sala de voz
     await voiceRoom.destroy();
 
-    return res.status(200).json({ message: "Sala de voz eliminada exitosamente" });
+    return res
+      .status(200)
+      .json({ message: "Sala de voz eliminada exitosamente" });
   } catch (error) {
     console.error("Error al eliminar la sala de voz:", error);
     return res.status(500).json({ error: "Error al eliminar la sala de voz" });
+  }
+};
+
+export const getVoiceRoomsByPreferences = async (req, res) => {
+  try {
+    const { user_id } = req.query;
+    const results = await getVoiceRooms(user_id);
+    return res.status(201).json(results);
+  } catch (error) {
+    console.log(error);
   }
 };

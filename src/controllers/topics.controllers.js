@@ -5,12 +5,12 @@ import { Op } from "sequelize";
 //solo admin o moderador
 export const bulksTopic = async (req, res) => {
   try {
-      let topicsData = req.body;
-      await Topic.bulkCreate(topicsData);
-      res.status(201).json({ message: 'Temas agregados exitosamente' });
+    let topicsData = req.body;
+    await Topic.bulkCreate(topicsData);
+    res.status(201).json({ message: "Temas agregados exitosamente" });
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Error al agregar temas', error });
+    console.error(error);
+    res.status(500).json({ message: "Error al agregar temas", error });
   }
 };
 //añadir un tema, si tiene topic_id, es tema secundario
@@ -29,9 +29,7 @@ export const addTopic = async (req, res) => {
     });
 
     if (topicExists) {
-      return res
-        .status(400)
-        .json({ error: "Este tema ya existe" });
+      return res.status(400).json({ error: "Este tema ya existe" });
     }
 
     const newTopic = await Topic.create({
@@ -90,23 +88,28 @@ export const getPrincipalTopic = async (req, res) => {
       attributes: ["id", "topic_name"], // Solo selecciona el campo topic_name
     });
     res.status(201).json(mainTopics);
-  } catch (error) {
-
-  }
+  } catch (error) {}
 };
 //todos lo pueden hacer
 export const getSecondTopic = async (req, res) => {
   try {
+    // Si `topic_id` es parte de la URL, usar `req.params`; si es parámetro de consulta, usar `req.query`
+    let { topic_id } = req.query; // O req.params si está en la URL
     const mainTopics = await Topic.findAll({
       where: {
-        topic_id: {
-          [Op.ne]: null, // Filtra donde topic_id no es null
-        },
+        topic_id,
       },
-      attributes: ["topic_id", "topic_name"], // Solo selecciona el campo topic_name
+      attributes: ["topic_id", "topic_name","id"], // Solo selecciona topic_id y topic_name
     });
-    res.status(201).json(mainTopics);
+    
+    if (mainTopics.length === 0) {
+      return res.status(404).json({ message: "No topics found" });
+    }
+
+    res.status(200).json(mainTopics); // Código 200 para éxito
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" }); // Respuesta para errores
   }
 };
+

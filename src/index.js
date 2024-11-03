@@ -3,6 +3,7 @@ import { Server } from "socket.io";
 import { config } from "dotenv";
 import { createServer } from "node:http";
 import sequelize from "../db/db.js";
+import cors from "cors";
 import cookieParser from "cookie-parser";
 import { registerSocketEvents } from "./sockets/principalSocket.socket.js";
 
@@ -25,8 +26,8 @@ import postTags from "./routes/post_tags.routes.js";
 import moderationReport from "./routes/moderation_reports.routes.js";
 import userPreferencesTag from "./routes/user_preferences_tags.routes.js";
 import matchmakingConnect from "./routes/mm_user_connect.routes.js";
-import emailVerify from "./routes/verification_email.routes.js";
 import vrMembersRoutes from "./routes/voice_room_member.routes.js";
+// import emailVerify from "./routes/verification_email.routes.js";
 // import indexRoutes from "./routes/index.routes.js";
 
 const app = express();
@@ -35,11 +36,12 @@ const PORT = process.env.PORT;
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5500", "http://127.0.0.1:5500"], // URL de tu frontend
+    origin: ["http://localhost:4200", "http://127.0.0.1:4200"], // URL de tu frontend
+    // origin: ["http://localhost:5500", "http://127.0.0.1:5500"],
     methods: ["GET", "POST"],
     allowedHeaders: ["my-custom-header"],
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 
 registerSocketEvents(io);
@@ -53,8 +55,10 @@ registerSocketEvents(io);
 // });
 
 //middlewares
+
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors());
 
 // app.use(indexRoutes);
 // app.use(userRoutes);
@@ -75,14 +79,16 @@ app.use(moderationReport);
 app.use(userPreferencesTag);
 app.use(tags);
 app.use(matchmakingConnect);
-app.use(emailVerify);
 app.use(vrMembersRoutes);
+// app.use(emailVerify);
 
 app.use((req, res, next) => {
   res.status(404).json({
     message: "endpoint not found",
   });
 });
+
+//cambio aqui
 
 // Maneja las conexiones de Socket.io
 
