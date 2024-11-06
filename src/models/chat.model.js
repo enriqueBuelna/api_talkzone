@@ -84,13 +84,13 @@ Chat.belongsTo(Message, {
   foreignKeyConstraints: true,
 });
 
-Message.belongsTo(Chat, {
-  as: "messages_chat",
-  foreignKey: {
-    name: "conversation_id",
-    allowNull: false,
-    onDelete: "CASCADE",
-    onUpdate: "CASCADE",
-  },
-  foreignKeyConstraints: true,
-});
+// Message.belongsTo(Chat, {
+//   as: "messages_chat",
+//   foreignKey: {
+//     name: "conversation_id",
+//     allowNull: false,
+//     onDelete: "CASCADE",
+//     onUpdate: "CASCADE",
+//   },
+//   foreignKeyConstraints: true,
+// });

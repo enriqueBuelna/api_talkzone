@@ -28,11 +28,12 @@ export const createVoiceRoomService = async (
       host_user_id,
     });
 
-    await Promise.all(
-      tags.map(async (tag) => {
-        await createVoiceRoomTag(voice_room.id, tag.tag_id);
-      })
-    );
+    //DESCOMENTAR ESTO , 05 DE NOVIEMBRE
+    // await Promise.all(
+    //   tags.map(async (tag) => {
+    //     await createVoiceRoomTag(voice_room.id, tag.tag_id);
+    //   })
+    // );
     return voice_room;
   } catch (error) {
     console.log(error);

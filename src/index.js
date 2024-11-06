@@ -91,10 +91,11 @@ app.use((req, res, next) => {
 //cambio aqui
 
 // Maneja las conexiones de Socket.io
-
+console.time("Sincronización Sequelize");
 sequelize
-  .sync({ force: false })
+  .sync({ force: false})
   .then(() => {
+    console.timeEnd("Sincronización Sequelize");
     console.log(
       "Conexión a la base de datos establecida y tablas sincronizadas"
     );
@@ -106,3 +107,4 @@ sequelize
   .catch((error) => {
     console.error("Error al conectar a la base de datos:", error);
   });
+console.log("Hola");
