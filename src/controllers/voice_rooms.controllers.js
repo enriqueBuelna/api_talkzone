@@ -3,6 +3,7 @@ import {
   createVoiceRoomService,
   getVoiceRoomByIdService,
   getVoiceRooms,
+  closeVoiceRoom
 } from "../services/voice_room.service.js";
 // Controlador para crear una sala de voz
 export const createVoiceRoom = async (req, res) => {
@@ -138,3 +139,13 @@ export const getVoiceRoomsByPreferences = async (req, res) => {
     console.log(error);
   }
 };
+
+export const closeVoiceRoomm = async (req, res) => {
+  try {
+    const {room_id} = req.body;
+    const room = await closeVoiceRoom(room_id);
+    return res.status(201).json(room);
+  } catch (error) {
+    console.log("A")
+  }
+}

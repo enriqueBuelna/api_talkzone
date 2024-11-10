@@ -37,16 +37,32 @@ export const VoiceRoomMember = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    type: {
+      type: DataTypes.ENUM("host", "member"),
+      defaultValue: "member",
+      allowNull: false,
+    },
+    in_stage: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    },
   },
   {
     tableName: "Voice_room_members",
     timestamps: false,
+    indexes: [
+      {
+        unique: true,
+        fields: ["room_id", "user_id"],
+      },
+    ],
   }
 );
 
 // Definición de relaciones
 VoiceRoomMember.belongsTo(VoiceRoom, {
-  as:"voice_room_member_to_voice_room",
+  as: "voice_room_member_to_voice_room",
   foreignKey: {
     name: "room_id",
     onDelete: "CASCADE",
@@ -54,7 +70,7 @@ VoiceRoomMember.belongsTo(VoiceRoom, {
 });
 
 VoiceRoomMember.belongsTo(User, {
-  as:"user_information_voice_room",
+  as: "user_information_voice_room",
   foreignKey: {
     name: "user_id",
     onDelete: "CASCADE",
@@ -62,17 +78,17 @@ VoiceRoomMember.belongsTo(User, {
 });
 
 VoiceRoom.hasMany(VoiceRoomMember, {
-  as:"users_of_voice_room",
+  as: "users_of_voice_room",
   foreignKey: {
     name: "room_id",
     onDelete: "CASCADE",
   },
-})
+});
 
 User.hasMany(VoiceRoomMember, {
-  as:"user_to_voice_room_member",
+  as: "user_to_voice_room_member",
   foreignKey: {
     name: "user_id",
     onDelete: "CASCADE",
   },
-})
+});

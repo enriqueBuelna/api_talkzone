@@ -5,6 +5,6 @@ import { createVoiceRoomMember, getAllVoiceRoomMembers } from "../controllers/vo
 const router = Router();
 
 router.post('/voice_rooms_members/createVoiceRoomMember', createVoiceRoomMember);
-router.get('/voice_rooms_members/getAllVoiceRoomMembers/:room_id', getAllVoiceRoomMembers);
+router.get('/voice_rooms_members/getAllVoiceRoomMembers', getAllVoiceRoomMembers);
 
 export default router;
