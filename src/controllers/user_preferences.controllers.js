@@ -98,16 +98,6 @@ export const filteredPreference = async (req, res) => {
     usuarios.forEach((el) => {
       //el -> es un usuario
       let tuvoTodo = true;
-      if (genderOption) {
-        if (genderOption !== el.userInformation.gender) {
-          return false;
-        }
-      }
-      if (connectOption) {
-        if (el.userInformation.is_online !== "online") {
-          return false;
-        }
-      }
       //en cada ele va a existir un topic_id
       if (topicsKnow) {
         tuvoTodo = isSubset(
