@@ -13,7 +13,13 @@ export const UserPreference = sequelize.define(
       primaryKey: true,
     },
     type: {
-      type: DataTypes.ENUM("know", "learn"),
+      type: DataTypes.ENUM(
+        "explorador",
+        "mentor",
+        "entusiasta",
+        "know",
+        "learn"
+      ),
       allowNull: false,
     },
     created_at: {
@@ -51,14 +57,14 @@ export const UserPreference = sequelize.define(
   }
 );
 
-
 // Relación con la tabla Users
 UserPreference.belongsTo(User, {
+  as:"user_preference_to_user",
   foreignKey: {
-    name:"user_id",
-    target:"id",
-    allowNull:false,
-    onDelete:"CASCADE"
+    name: "user_id",
+    target: "id",
+    allowNull: false,
+    onDelete: "CASCADE",
   },
   foreignKeyConstraints: true,
 });
@@ -66,10 +72,18 @@ UserPreference.belongsTo(User, {
 // Relación con la tabla Topics
 UserPreference.belongsTo(Topic, {
   foreignKey: {
-    name:"topic_id",
-    target:"id",
-    allowNull:false,
-    onDelete:"CASCADE"
+    name: "topic_id",
+    target: "id",
+    allowNull: false,
+    onDelete: "CASCADE",
   },
   foreignKeyConstraints: true,
+});
+
+User.hasMany(UserPreference, {
+  as: 'user_to_user_preference',
+  foreignKey: {
+    name: "user_id",
+    onDelete: "CASCADE",
+  },
 });

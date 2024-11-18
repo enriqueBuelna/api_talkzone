@@ -86,6 +86,7 @@ export const getVoiceRoomByIdService = async (room_id) => {
 
 export const getVoiceRooms = async (user_id) => {
   try {
+    //aqui va a ser un cambio
     let topics_ids = await getUserPreferencess(user_id);
     topics_ids = topics_ids.map((item) => item.topic_id);
     let rooms = await VoiceRoom.findAll({

@@ -19,7 +19,7 @@ router.get('/preferences', getUserPreferences);
 router.put('/preferences/:id', updateUserPreference);
 
 // Ruta para eliminar una preferencia de usuario
-router.delete('/preferences/:id', deleteUserPreference);
+router.delete('/preferences', deleteUserPreference);
 
 router.post('/preferences/filtered', filteredPreference);
 

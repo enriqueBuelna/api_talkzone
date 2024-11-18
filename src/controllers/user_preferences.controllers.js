@@ -60,7 +60,7 @@ export const updateUserPreference = async (req, res) => {
 
 // Eliminar una preferencia de usuario
 export const deleteUserPreference = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.query;
 
   try {
     await userPreferenceService.deleteUserPreference(id);
@@ -76,54 +76,99 @@ export const deleteUserPreference = async (req, res) => {
 };
 
 export const filteredPreference = async (req, res) => {
-  const { user_id, topicsKnow, topicsLearn, gender, connect } = req.body;
+  const {
+    user_id,
+    topicsMentores,
+    topicsEntusiastas,
+    topicsExploradores,
+    gender,
+    connect,
+    onlyMentores,
+    onlyExploradores,
+    onlyEntusiastas,
+  } = req.body;
   try {
-    let topicsIdKnow, topicsIdLearn, genderOption, connectOption;
-    if (topicsKnow) {
-      topicsIdKnow = topicsKnow.map((topic) => topic.topic_id);
+    let topicsIdMentores,
+      topicsIdEntusiastas,
+      topicsIdExploradores,
+      genderOption,
+      connectOption,
+      onlyMentoresOption;
+    // let topicsIdKnow, topicsIdLearn, genderOption, connectOption;
+    if (topicsMentores) {
+      topicsIdMentores = topicsMentores.map((topic) => topic.topic_id);
     }
-    if (topicsLearn) {
-      topicsIdLearn = topicsLearn.map((topic) => topic.topic_id);
+    if (topicsEntusiastas) {
+      topicsIdEntusiastas = topicsEntusiastas.map((topic) => topic.topic_id);
     }
+    if (topicsExploradores) {
+      topicsIdExploradores = topicsExploradores.map((topic) => topic.topic_id);
+    }
+    // if (topicsLearn) {
+    //   topicsIdLearn = topicsLearn.map((topic) => topic.topic_id);
+    // }
     if (gender) {
       genderOption = gender.type;
     }
     if (connect) {
       connectOption = connect[0];
     }
+
+    if (onlyMentores) {
+      onlyMentoresOption = onlyMentores[0];
+    }
     //ocupo llamar a la prueba
     let usuarios = await auxiliarMatchmaking(user_id);
     let usuariosFiltered = [];
-    //si tiene topicsLearn ocupo ver que pedo
+    // //si tiene topicsLearn ocupo ver que pedo
+    // console.log(topicsIdMentores);
     usuarios.forEach((el) => {
       //el -> es un usuario
       let tuvoTodo = true;
       //en cada ele va a existir un topic_id
-      if (topicsKnow) {
-        tuvoTodo = isSubset(
-          topicsIdKnow,
-          el.userPreferences
-            .filter((topic) => topic.type === "know")
-            .map((topic) => topic.topic_id)
-        );
+      if (genderOption) {
+        if (genderOption !== el.userInformation.gender) {
+          return false;
+        }
+      }
+      if (connectOption) {
+        if (el.userInformation.is_online !== "online") {
+          return false;
+        }
+      }
+      if (topicsMentores) {
+        let arr2;
+        if (onlyMentoresOption) {
+          arr2 = el.userPreferences
+            .filter((topic) => topic.type === "explorador")
+            .map((topic) => topic.topic_id);
+        } else {
+          arr2 = el.userPreferences.map((topic) => topic.topic_id);
+        }
+        tuvoTodo = isSubset(topicsIdMentores, arr2);
         if (!tuvoTodo) {
           return false;
         }
       }
-      if (topicsLearn) {
-        tuvoTodo = isSubset(
-          topicsIdLearn,
-          el.userPreferences
-            .filter((topic) => topic.type === "learn")
-            .map((topic) => topic.topic_id)
-        );
+      if (topicsEntusiastas) {
+        let arr2 = el.userPreferences.map((topic) => topic.topic_id);
+        tuvoTodo = isSubset(topicsIdEntusiastas, arr2);
         if (!tuvoTodo) {
           return false;
         }
       }
+      if (topicsExploradores) {
+        let arr2 = el.userPreferences.map((topic) => topic.topic_id);
+        tuvoTodo = isSubset(topicsIdExploradores, arr2);
+        if (!tuvoTodo) {
+          return false;
+        }
+      }
+      console.log(el.user_id);
       usuariosFiltered.push(el);
     });
-
+    console.log(" _ ");
+    // console.log(usuariosFiltered);
     res.status(201).json(usuariosFiltered);
   } catch (error) {
     console.log(error);

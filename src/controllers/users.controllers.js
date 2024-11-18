@@ -8,6 +8,8 @@ import {
   sendEmailPasswordChangeService,
   getFollowersFollowedd,
   getBasicInfoo,
+  getCompleteProfilee,
+  editProfilee
 } from "../services/users.services.js";
 
 export const registerUser = async (req, res) => {
@@ -108,3 +110,23 @@ export const getBasicInfo = async (req, res) => {
     console.log(error);
   }
 };
+
+export const getCompleteProfile = async (req, res) => {
+  const { user_id } = req.query;
+  try {
+    const user = await getCompleteProfilee(user_id);
+    res.status(201).json(user);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const editProfile = async (req, res) => {
+  const {user_id, profile_picture, cover_picture, about_me, username} = req.body;
+  try {
+    const user = await editProfilee(user_id, profile_picture, cover_picture, about_me, username);
+    res.status(201).json(user);
+  } catch (error) {
+    
+  }
+}

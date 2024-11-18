@@ -6,7 +6,7 @@ import { Tag } from "../models/tag.models.js";
 import { UserPreferenceTag } from "../models/user_preference_tag.model.js";
 
 // Servicio para crear una preferencia de usuario
-export const createUserPreference = async (user_id, topic_id, type) => {
+export const createUserPreference = async (user_id, topic_id, type, tagss) => {
   const user = await User.findByPk(user_id);
   const topic = await Topic.findByPk(topic_id);
 
@@ -31,11 +31,17 @@ export const createUserPreference = async (user_id, topic_id, type) => {
     type,
   });
 
+  const tagPromises = tagss.map((el) =>
+    createUserPreferenceTag(newPreference.id, el.id)
+  );
+  const tag = await Promise.all(tagPromises);
   const valueReturn = {
     id: newPreference.id,
     topic_name: topic.topic_name,
+    topic_id,
+    type: newPreference.type,
+    tags: tag,
   };
-
   return valueReturn;
 };
 
@@ -59,7 +65,7 @@ export const getUserPreferences = async (user_id) => {
         attributes: ["id"],
       },
     ], // Incluir el tema asociado
-    attributes: ["id","type"],
+    attributes: ["id", "type"],
   });
 
   if (!preferences.length) {

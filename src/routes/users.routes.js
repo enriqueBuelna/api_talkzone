@@ -9,6 +9,8 @@ import {
   sendEmailPasswordChange,
   getFollowersFollowed,
   getBasicInfo,
+  getCompleteProfile,
+  editProfile
 } from "../controllers/users.controllers.js";
 import {
   authenticateToken,
@@ -37,5 +39,7 @@ router.post("/users/emailVerification", createEmailVerification);
 router.post("/users/emailVerification/verify", verifyCode);
 router.get("/users/getFollowersFollowed", getFollowersFollowed);
 router.get("/users/getBasicInfo", getBasicInfo);
+router.get("/users/getCompleteProfile", getCompleteProfile);
+router.post("/users/editProfile", editProfile);
 
 export default router;

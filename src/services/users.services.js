@@ -227,7 +227,7 @@ export const getUserPreferencess = async (userId) => {
           attributes: ["tag_id"],
         },
       ],
-      attributes: ["type", "topic_id"],
+      attributes: ["id", "type", "topic_id"],
     });
 
     if (userPreferences.length === 0) {
@@ -286,6 +286,68 @@ export const getFollowersFollowedd = async (user_id) => {
       .filter((user) => user.id !== user_id); // Excluir el usuario actual
 
     return uniqueUsers;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getCompleteProfilee = async (user_id) => {
+  try {
+    const user = await User.findOne({
+      where: { id: user_id },
+      attributes: [
+        "id",
+        "username",
+        "profile_picture",
+        "gender",
+        "about_me",
+        "cover_picture",
+      ],
+      include: [
+        {
+          model: UserPreference,
+          include: [
+            {
+              model: Topic, // Incluir el nombre del tema
+              attributes: ["topic_name"], // Solo selecciona el nombre del tema
+            },
+            {
+              model: UserPreferenceTag, // Incluir las etiquetas
+              include: [
+                {
+                  model: Tag,
+                  attributes: ["tag_name"], // Solo selecciona el nombre de las etiquetas
+                },
+              ],
+              attributes: ["tag_id"],
+            },
+          ],
+          attributes: ["id", "type", "topic_id"],
+        },
+      ],
+    });
+    return user;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const editProfilee = async (
+  user_id,
+  profile_picture,
+  cover_picture,
+  about_me,
+  username
+) => {
+  try {
+    const user = await User.findByPk(user_id);
+    user.profile_picture = profile_picture || user.profile_picture;
+    user.about_me = about_me || user.about_me;
+    user.username = username || user.username;
+    user.cover_picture = cover_picture || user.cover_picture;
+    // Guardar los cambios en el usuario
+    await user.save();
+    return user;
   } catch (error) {
     console.log(error);
   }

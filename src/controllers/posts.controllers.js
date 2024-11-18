@@ -5,10 +5,13 @@ import {
   getPostFollowingService,
   getPostTopicsService,
   getPostByIdService,
+  getPostAll,
+  getPostFriends,
+  getLikePost
 } from "../services/post.services.js";
 
 export const createPost = async (req, res) => {
-  const { user_id, content, media_url, visibility, topic_id, tags } = req.body;
+  const { user_id, content, media_url, visibility, user_preference_id, tags } = req.body;
 
   try {
     const newPost = await createPostService(
@@ -16,7 +19,7 @@ export const createPost = async (req, res) => {
       content,
       media_url,
       visibility,
-      topic_id,
+      user_preference_id,
       tags
     );
     return res.status(201).json(newPost);
@@ -27,7 +30,7 @@ export const createPost = async (req, res) => {
 };
 
 export const getPostById = async (req, res) => {
-  const {id} = req.params;
+  const {id} = req.query;
   try {
     const post = await getPostByIdService(id);
     return res.status(201).json(post);
@@ -82,3 +85,33 @@ export const getRelevantPosts = async (req, res) => {
     res.status(201).json(results);
   } catch (error) {}
 };
+
+export const getAllPost = async (req, res ) => {
+  const {user_id, page} = req.query;
+  try {
+    let results = await getPostAll(user_id, page);
+    res.status(201).json(results);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const getFriendsPost = async (req, res) => {
+  const {user_id} = req.query;
+  try {
+    let results = await getPostFriends(user_id);
+    res.status(201).json(results);
+  } catch (error) {
+    
+  }
+}
+
+export const getPostLike = async (req, res) => {
+  const {user_id, page} = req.query;
+  try {
+    let results = await getLikePost(user_id, page);
+    res.status(201).json(results);
+  } catch (error) {
+    
+  }
+}

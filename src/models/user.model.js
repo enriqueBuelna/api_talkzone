@@ -25,6 +25,10 @@ export const User = sequelize.define('Users', {
     type: DataTypes.STRING(255),
     allowNull: true
   },
+  cover_picture: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
   about_me: {
     type: DataTypes.TEXT,
     allowNull: true

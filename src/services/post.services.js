@@ -10,14 +10,16 @@ import { PostTag } from "../models/post_tag.model.js";
 import { createPostTagService } from "./post_tag.services.js";
 import { User } from "../models/user.model.js";
 import { Comment } from "../models/comment.model.js";
-
+import { getUserPreferencess } from "./users.services.js";
+import { Like } from "../models/like.model.js";
+import { json, Op } from "sequelize";
 // Crear una nueva publicación
 export const createPostService = async (
   user_id,
   content,
   media_url,
   visibility,
-  topic_id,
+  user_preference_id,
   tags
 ) => {
   try {
@@ -26,19 +28,45 @@ export const createPostService = async (
       content,
       media_url,
       visibility,
-      topic_id,
+      user_preference_id,
     });
 
-    //los tags van a tener id
-    console.log(tags);
+    const matchingPost = await Post.findOne({
+      where: {
+        id: newPost.id,
+      },
+      include: [
+        {
+          model: User,
+          as: "post_user",
+          attributes: ["id", "username", "gender", "profile_picture"],
+        },
+        {
+          model: UserPreference,
+          as: "post_user_preference",
+          include: [
+            {
+              model: Topic,
+              attributes: ["topic_name"],
+            },
+          ],
+          attributes: ["topic_id", "type"],
+        },
+        {
+          model: Comment, // Incluir los comentarios asociados al post
+          include: [
+            {
+              as: "userss",
+              model: User, // Incluir la información del usuario que hizo cada comentario
+              attributes: ["id", "username", "gender", "profile_picture"],
+            },
+          ],
+          attributes: ["id", "content", "likes_count"],
+        },
+      ],
+    });
 
-    await Promise.all(
-      tags.map(async (tag) => {
-        await createPostTagService(newPost.id, tag.id);
-      })
-    );
-
-    return newPost;
+    return matchingPost;
   } catch (error) {
     console.error("Error al crear la publicación:", error);
     throw new Error("Error al crear la publicación");
@@ -77,27 +105,62 @@ export const updatePostService = async (
 export const getPostByIdService = async (postId) => {
   try {
     // Buscar la publicación por su ID, incluyendo los comentarios y los usuarios de cada comentario
-    const post = await Post.findOne({
-      where: { id: postId }, // Filtrar por ID de la publicación
+    // const post = await Post.findOne({
+    //   where: { id: postId }, // Filtrar por ID de la publicación
+    //   include: [
+    //     {
+    //       model: Comment, // Incluir los comentarios asociados al post
+    //       include: [
+    //         {
+    //           association: "userss",
+    //           model: User, // Incluir la información del usuario que hizo cada comentario
+    //           attributes: ["username", "email"], // Traer solo los campos necesarios del usuario
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // });
+
+    const matchingPost = await Post.findOne({
+      where: {
+        id: postId,
+      },
       include: [
+        {
+          model: User,
+          as: "post_user",
+          attributes: ["id", "username", "gender", "profile_picture"],
+        },
+        {
+          model: UserPreference,
+          as: "post_user_preference",
+          include: [
+            {
+              model: Topic,
+              attributes: ["topic_name"],
+            },
+          ],
+          attributes: ["topic_id", "type"],
+        },
         {
           model: Comment, // Incluir los comentarios asociados al post
           include: [
             {
-              association: 'userss',
+              as: "userss",
               model: User, // Incluir la información del usuario que hizo cada comentario
-              attributes: ["username", "email"], // Traer solo los campos necesarios del usuario
+              attributes: ["id", "username", "gender", "profile_picture"],
             },
           ],
+          attributes: ["id", "content", "likes_count"],
         },
       ],
     });
 
-    if (!post) {
+    if (!matchingPost) {
       throw Error("No se encontro post");
     }
 
-    return post;
+    return matchingPost;
   } catch (error) {
     console.log(error);
   }
@@ -249,4 +312,202 @@ export const getPostTopicsService = async (id, page = 1, limit = 10) => {
     console.error("Error al obtener las publicaciones:", error);
     throw new Error("Error al obtener las publicaciones");
   }
+};
+
+// export const getPostAll = async (user_id) => {
+//   try {
+//     const user_preferences = formatResponse(await getUserPreferencess(user_id));
+//     //conseguir los ids de los topics
+//     const topicIds = user_preferences.map((pref) => pref.id);
+//     const matchingPost = await Post.findAll({
+//       where: {
+//         user_preference_id: {
+//           [Op.in]: topicIds,
+//         },
+//       },
+//       include: [
+//         {
+//           model: User,
+//           as: "post_user",
+//           attributes: ["id", "username", "gender", "profile_picture"],
+//         },
+//         {
+//           model: UserPreference,
+//           as: "post_user_preference",
+//           include: [
+//             {
+//               model: Topic,
+//               attributes: ["topic_name"],
+//             },
+//           ],
+//           attributes: ["topic_id", "type"],
+//         },
+//       ],
+//     });
+//     return matchingPost;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
+export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
+  try {
+    const user_preferences = formatResponse(await getUserPreferencess(user_id));
+    const topicIds = user_preferences.map((pref) => pref.id);
+
+    const offset = (page - 1) * pageSize;
+
+    const matchingPost = await Post.findAll({
+      where: {
+        user_preference_id: {
+          [Op.in]: topicIds,
+        },
+      },
+      include: [
+        {
+          model: User,
+          as: "post_user",
+          attributes: ["id", "username", "gender", "profile_picture"],
+        },
+        {
+          model: UserPreference,
+          as: "post_user_preference",
+          include: [
+            {
+              model: Topic,
+              attributes: ["topic_name"],
+            },
+          ],
+          attributes: ["topic_id", "type"],
+        },
+      ],
+      limit: pageSize,
+      offset: offset,
+    });
+
+    return matchingPost;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+function formatResponse(data) {
+  return data.map((item) => ({
+    id: item.id,
+    type: item.type, // Cambiado de type a role para reflejar el nuevo formato
+    topic_id: item.topic_id,
+    tags: item.userPreferenceTags.map((tag) => tag.tag_id),
+  }));
+}
+
+//
+
+export const getPostFriends = async (user_id) => {
+  let usuarios = await getFollowing(user_id);
+  let usuariosId = usuarios.map((el) => el.id);
+  console.log(usuariosId);
+  const matchingPost = await Post.findAll({
+    where: {
+      user_id: {
+        [Op.in]: usuariosId,
+      },
+    },
+    include: [
+      {
+        model: User,
+        as: "post_user",
+        attributes: ["id", "username", "gender", "profile_picture"],
+      },
+      {
+        model: UserPreference,
+        as: "post_user_preference",
+        include: [
+          {
+            model: Topic,
+            attributes: ["topic_name"],
+          },
+        ],
+        attributes: ["topic_id", "type"],
+      },
+    ],
+  });
+  return matchingPost;
+};
+
+export const getYourPost = async (user_id, page = 1, pageSize = 10) => {
+  try {
+    const offset = (page - 1) * pageSize;
+
+    const matchingPost = await Post.findAll({
+      where: {
+        user_id,
+      },
+      include: [
+        {
+          model: User,
+          as: "post_user",
+          attributes: ["id", "username", "gender", "profile_picture"],
+        },
+        {
+          model: UserPreference,
+          as: "post_user_preference",
+          include: [
+            {
+              model: Topic,
+              attributes: ["topic_name"],
+            },
+          ],
+          attributes: ["topic_id", "type"],
+        },
+      ],
+      limit: pageSize,
+      offset: offset,
+    });
+
+    return matchingPost;
+  } catch (error) {}
+};
+
+export const getLikePost = async (user_id, page = 1, pageSize = 10) => {
+  try {
+    const likedPosts = await Like.findAll({
+      attributes: ["post_id"], // Selecciona solo el campo post_id
+      where: {
+        user_id, // Filtra por el ID del usuario
+        post_id: { [Op.ne]: null }, // Asegúrate de que sea un like asociado a un post, no a un comentario
+      },
+      raw: true, // Devuelve datos puros sin instancias de Sequelize
+    });
+    const postIds = likedPosts.map((like) => like.post_id);
+    const offset = (page - 1) * pageSize;
+
+    const matchingPost = await Post.findAll({
+      where: {
+        id: postIds,
+      },
+      include: [
+        {
+          model: User,
+          as: "post_user",
+          attributes: ["id", "username", "gender", "profile_picture"],
+        },
+        {
+          model: UserPreference,
+          as: "post_user_preference",
+          include: [
+            {
+              model: Topic,
+              attributes: ["topic_name"],
+            },
+          ],
+          attributes: ["topic_id", "type"],
+        },
+      ],
+      limit: pageSize,
+      offset: offset,
+    });
+
+    return matchingPost;
+  } catch (error) {}
 };

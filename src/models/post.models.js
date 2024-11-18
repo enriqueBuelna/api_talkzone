@@ -2,6 +2,7 @@ import { DataTypes, sql } from "@sequelize/core";
 import sequelize from "../../db/db.js";
 import { User } from "./user.model.js";
 import { Topic } from "./topic.models.js";
+import { UserPreference } from "./user_preferences.model.js";
 
 export const Post = sequelize.define(
   "Post",
@@ -54,11 +55,11 @@ export const Post = sequelize.define(
       },
       onDelete: "CASCADE",
     },
-    topic_id: {
+    user_preference_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: Topic,
+        model: UserPreference,
         key: "id",
       },
       onDelete: "CASCADE",
@@ -72,7 +73,7 @@ export const Post = sequelize.define(
 
 // // Definir las relaciones
 Post.belongsTo(User, {
-  as: 'userss',
+  as: 'post_user',
   foreignKeyConstraints: true,
   foreignKey: {
     name:"user_id",
@@ -82,11 +83,11 @@ Post.belongsTo(User, {
   },
 });
 
-Post.belongsTo(Topic, {
-  as: 'Current',
+Post.belongsTo(UserPreference, {
+  as: 'post_user_preference',
   foreignKeyConstraints: true,
   foreignKey: {
-    name:"topic_id",
+    name:"user_preference_id",
     target:"id",
     allowNull:false,
     onDelete:"CASCADE"
