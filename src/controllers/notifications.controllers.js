@@ -1,8 +1,20 @@
 import { Notification } from "../models/notification.model.js";
 import { User } from "../models/user.model.js";
+import { Comment } from "../models/comment.model.js";
+import { Post } from "../models/post.models.js";
+import { Like } from "../models/like.model.js";
 // Crear una nueva notificación
 export const createNotification = async (req, res) => {
-  const { user_id, sender_id, type, related_post_id, related_comment_id, related_message_id } = req.body;
+  const {
+    user_id,
+    sender_id,
+    type,
+    related_post_id,
+    related_comment_id,
+    related_message_id,
+    related_like_id,
+    related_room_open_id,
+  } = req.body;
 
   try {
     const notification = await Notification.create({
@@ -12,31 +24,68 @@ export const createNotification = async (req, res) => {
       related_post_id,
       related_comment_id,
       related_message_id,
+      related_like_id,
+      related_room_open_id,
     });
 
     return res.status(201).json(notification);
   } catch (error) {
-    return res.status(500).json({ message: "Error al crear la notificación", error });
+    return res
+      .status(500)
+      .json({ message: "Error al crear la notificación", error });
   }
 };
 
 // Obtener notificaciones de un usuario
 export const getNotifications = async (req, res) => {
-  const { userId } = req.params;
+  const { user_id } = req.query;
 
   try {
     const notifications = await Notification.findAll({
-      where: { user_id: userId },
+      where: { receiver_id: user_id },
       include: [
-        { model: User, as: 'sender', attributes: ['id', 'username'] }, // Incluir información del remitente
+        {
+          model: User,
+          as: "userSender",
+          attributes: ["id", "username", "profile_picture", "gender"],
+        }, // Incluir información del remitente
         // Incluir otras relaciones si es necesario
+        {
+          model: Like,
+          include: [
+            {
+              model: Post,
+              attributes: ["id"], // Información de la publicación
+            },
+            {
+              model: Comment,
+              include: [
+                {
+                  association: 'postss',
+                  model: Post,
+                  attributes: ["id"], // Información de la publicación original
+                },
+              ],
+              attributes: ["id"], // Información del comentario
+            },
+          ],
+        },
       ],
-      order: [['created_at', 'DESC']],
+      attributes: [
+        "id",
+        "type",
+        "related_post_id",
+        "related_comment_id",
+        "related_like_id",
+        "related_room_open_id",
+        "related_message_id",
+      ],
+      order: [["created_at", "DESC"]],
     });
 
     return res.status(200).json(notifications);
   } catch (error) {
-    return res.status(500).json({ message: "Error al obtener notificaciones", error });
+    console.log(error)
   }
 };
 
@@ -55,6 +104,8 @@ export const markAsRead = async (req, res) => {
 
     return res.status(200).json(notification);
   } catch (error) {
-    return res.status(500).json({ message: "Error al marcar la notificación como leída", error });
+    return res
+      .status(500)
+      .json({ message: "Error al marcar la notificación como leída", error });
   }
 };

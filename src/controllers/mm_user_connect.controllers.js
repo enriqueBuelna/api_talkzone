@@ -6,6 +6,7 @@ import {
   getUserProileInformation,
 } from "../services/users.services.js";
 import { json, Op } from "sequelize";
+import { Follower } from "../models/follower.model.js";
 
 //USAR ESTE ENDPOINT
 export const matchmakingConnect = async (req, res) => {
@@ -14,313 +15,6 @@ export const matchmakingConnect = async (req, res) => {
     res.status(200).json(await auxiliarMatchmaking(user_id));
   } catch (error) {}
 };
-
-// const calculateCompatibility = async (user1Id, user2Id) => {
-//   let userTopics1 = [],
-//     userTopics2 = [];
-//   let userTags1 = [],
-//     userTags2 = [];
-//   try {
-//     //OBTIENE LOS TEMAS, EN GENERAL
-//     let userPreferences = await UserPreference.findAll({
-//       where: { user_id: user1Id },
-//       include: [Topic],
-//     });
-//     if (userPreferences.length > 0) {
-//       // Accede al ID del primer resultado
-//       userPreferences.forEach((el) => {
-//         let preferencia = {
-//           topic_id: el.topic_id,
-//           id: el.id,
-//           type: el.type,
-//         };
-//         userTopics1.push(preferencia);
-//       });
-//     } else {
-//       console.log("No se encontraron preferencias para este usuario.");
-//     }
-
-//     // console.log(userTopics1);
-
-//     userPreferences = await UserPreference.findAll({
-//       where: { user_id: user2Id },
-//       include: [Topic],
-//     });
-
-//     if (userPreferences.length > 0) {
-//       // Accede al ID del primer resultado
-//       userPreferences.forEach((el) => {
-//         let preferencia = {
-//           topic_id: el.topic_id,
-//           id: el.id,
-//           type: el.type,
-//         };
-//         userTopics2.push(preferencia);
-//       });
-//     } else {
-//       console.log("No se encontraron preferencias para este usuario.");
-//     }
-
-//     console.log(userTopics1, userTopics2);
-
-//     // Calcular el número de temas en común
-//     const commonTopics = userTopics1.filter((el) =>
-//       userTopics2.some((topic) => topic.topic_id === el.topic_id)
-//     );
-
-//     let score = commonTopics.length * 10;
-
-//     // Aplana el array de resultados y los añade a userTags1
-//     userTags1.push(...(await getUserPreferencesTags(userTopics1)).flat());
-//     userTags2.push(...(await getUserPreferencesTags(userTopics2)).flat());
-
-//     // // Calcular el número de etiquetas en común
-//     const commonTags = userTags1.filter((tag) =>
-//       userTags2.some((t) => t.tag_id === tag.tag_id)
-//     );
-//     // console.log(commonTags);
-//     score += commonTags.length * 5;
-
-//     // // // Si los intereses coinciden en aprendizaje/enseñanza
-//     userTopics1.forEach((el) => {
-//       userTopics2.forEach((ele) => {
-//         if (ele.topic_id === el.topic_id) {
-//           if (
-//             (ele.type === "learn" && el.type === "know") ||
-//             (ele.type === "know" && el.type === "learn")
-//           ) {
-//             score += 15;
-//           }
-//         }
-//       });
-//     });
-
-//     console.log(score);
-
-//     // // Comprobar si ambos han estado activos recientemente
-//     // const [user1Active] = await db.execute(
-//     //   "SELECT last_active FROM users WHERE id = ?",
-//     //   [user1Id]
-//     // );
-//     // const [user2Active] = await db.execute(
-//     //   "SELECT last_active FROM users WHERE id = ?",
-//     //   [user2Id]
-//     // );
-
-//     // const now = new Date();
-//     // if (
-//     //   (now - new Date(user1Active[0].last_active)) / 1000 < 86400 &&
-//     //   (now - new Date(user2Active[0].last_active)) / 1000 < 86400
-//     // ) {
-//     //   score += 10;
-//     // }
-
-//     // return score;
-//   } catch (error) {
-//     console.error("Error al calcular compatibilidad:", error);
-//   }
-// };
-
-// const calculateCompatibility = async (user_id) => {
-//   try {
-//     let user = formatResponse(await getUserPreferencess(user_id));
-//     console.log(user);
-//     // Extraer los topic_id
-//     const topicIds = user.map((pref) => pref.topic_id);
-//     const matchingUsers = await UserPreference.findAll({
-//       attributes: ["user_id"],
-//       where: {
-//         topic_id: {
-//           [Op.in]: topicIds, // Usamos el array extraído de los topic_id
-//         },
-//         user_id: {
-//           [Op.ne]: user_id, // Excluir tu propio user_id de los resultados
-//         },
-//       },
-//       group: ["user_id"], // Agrupamos por usuario para evitar duplicados,
-//       raw: true,
-//     });
-
-//     let matchingUser = await Promise.all(
-//       matchingUsers.map(async (el) => {
-//         const userPreferences = formatResponse(
-//           await getUserPreferencess(el.user_id)
-//         );
-//         return {
-//           ...el,
-//           userPreferences,
-//         };
-//       })
-//     );
-
-//     let matches = [];
-
-//     // Agrupar preferencias del usuario actual por `topic_id`
-//     const userPrefByTopic = new Map();
-//     user.forEach((pref) => {
-//       userPrefByTopic.set(pref.topic_id, pref);
-//     });
-
-//     matchingUser.forEach((el) => {
-//       let howMuchTopics = 0;
-//       let howMuchTopicsCondition = 0; // Learn-Know o Know-Learn
-//       let howManyTags = 0;
-
-//       // Agrupar preferencias del usuario coincidente por `topic_id`
-//       const otherUserPrefByTopic = new Map();
-//       el.userPreferences.forEach((pref) => {
-//         otherUserPrefByTopic.set(pref.topic_id, pref);
-//       });
-
-//       userPrefByTopic.forEach((userPref, topicId) => {
-//         const otherPref = otherUserPrefByTopic.get(topicId);
-
-//         if (otherPref) {
-//           // Verificar la condición Learn-Know o Know-Learn
-//           if (
-//             (userPref.type === "know" && otherPref.type === "learn") ||
-//             (userPref.type === "learn" && otherPref.type === "know")
-//           ) {
-//             howMuchTopicsCondition++;
-//           } else {
-//             // Coincidencia de topics
-//             howMuchTopics++;
-//           }
-
-//           // Comparar tags si ambos usuarios tienen etiquetas
-//           if (userPref.tags.length > 0 && otherPref.tags.length > 0) {
-//             howManyTags += compareTags(userPref.tags, otherPref.tags);
-//           }
-//         }
-//       });
-
-//       // Calcular el puntaje total -- ME FALTA CHECAR LO DEL PORCENTAJE DE COINCIDENCIA
-//       let total = (howManyTags + howMuchTopics * 5 + howMuchTopicsCondition * 10 / 200) * 10;
-
-//       // // Guardar el resultado
-//       matches.push({ user_id: el.user_id, total });
-//     });
-
-//     // // Ordenar los resultados por puntaje
-//     matches.sort((a, b) => b.total - a.total);
-
-//   } catch (error) {}
-// };
-
-// const calculateCompatibility = async (user_id) => {
-//   try {
-//     let user = formatResponse(await getUserPreferencess(user_id)); // Obtener preferencias del usuario
-//     const topicIds = user.map((pref) => pref.topic_id); // Extraer los topic_id
-//     const matchingUsers = await UserPreference.findAll({
-//       attributes: ["user_id"],
-//       where: {
-//         topic_id: {
-//           [Op.in]: topicIds, // Usamos el array extraído de los topic_id
-//         },
-//         user_id: {
-//           [Op.ne]: user_id, // Excluir tu propio user_id de los resultados
-//         },
-//       },
-//       group: ["user_id"], // Agrupamos por usuario para evitar duplicados
-//       raw: true,
-//     });
-//     // console.log(user);
-//     let matchingUser = await Promise.all(
-//       matchingUsers.map(async (el) => {
-//         const userPreferences = formatResponse(
-//           await getUserPreferencess(el.user_id)
-//         );
-//         // console.log("Usuario B", userPreferences);
-
-//         return {
-//           ...el,
-//           userPreferences,
-//         };
-//       })
-//     );
-//     let matches = [];
-
-//     // Agrupar preferencias del usuario actual por `topic_id`
-//     const userPrefByTopic = new Map();
-//     user.forEach((pref) => {
-//       userPrefByTopic.set(pref.topic_id, pref);
-//     });
-
-//     matchingUser.forEach((el) => {
-//       let howMuchTopics = 0;
-//       let howMuchTopicsCondition = 0; // Learn-Know o Know-Learn
-//       let howManyTags = 0;
-
-//       // Agrupar preferencias del usuario coincidente por `topic_id`
-//       const otherUserPrefByTopic = new Map();
-//       el.userPreferences.forEach((pref) => {
-//         otherUserPrefByTopic.set(pref.topic_id, pref);
-//       });
-
-//       // console.log(otherUserPrefByTopic);
-//       // Recorrer preferencias del usuario actual para encontrar coincidencias con otros usuarios
-//       userPrefByTopic.forEach((userPref, topicId) => {
-//         const otherPref = otherUserPrefByTopic.get(topicId);
-//         console.log(
-//           "Mi other pref\n",
-//           otherPref,
-//           "\nMi user pref\n",
-//           userPref,
-//           "Mi user topic_id\n",
-//           topicId
-//         );
-//         if (otherPref) {
-//           // Verificar la condición Learn-Know o Know-Learn
-//           if (
-//             (userPref.type === "know" && otherPref.type === "learn") ||
-//             (userPref.type === "learn" && otherPref.type === "know")
-//           ) {
-//             howMuchTopicsCondition++;
-//           } else {
-//             // Coincidencia de temas en general
-//             howMuchTopics++;
-//           }
-
-//           // Comparar tags si ambos usuarios tienen etiquetas
-//           if (userPref.tags.length > 0 && otherPref.tags.length > 0) {
-//             howManyTags += compareTags(userPref.tags, otherPref.tags);
-//             console.log(howManyTags);
-//           }
-//         } else {
-//           // Penaliza por cada tema que no coincide
-//           howMuchTopics -= 1; // Ajusta el penalizador según la lógica de tu aplicación
-//           return; // Salimos de este bucle, ya que no hay coincidencia
-//         }
-//       });
-
-//       // Calcular el puntaje total
-//       const userTotalTopics = user.length; // Total de temas que tiene el usuario actual
-//       const otherTotalTopics = el.userPreferences.length; // Total de temas del otro usuario
-//       const totalTopicsToCompare = Math.max(userTotalTopics, otherTotalTopics); // Total de temas comparados es el mayor número
-
-//       const topicScore = howMuchTopics * 5; // Puntuación de coincidencia de temas
-//       const conditionScore = howMuchTopicsCondition * 10; // Puntuación de condición Learn-Know
-//       const tagScore = howManyTags * 2; // Puntuación de coincidencia de tags
-//       const totalScore = topicScore + conditionScore + tagScore;
-
-//       // Si el usuario actual tiene más temas que el otro, reducimos su porcentaje final
-//       const matchPercentage = Math.min(
-//         (totalScore / (totalTopicsToCompare * 10)) * 100,
-//         100
-//       );
-
-//       // Guardar el resultado
-//       matches.push({ user_id: el.user_id, matchPercentage });
-//     });
-
-//     // Ordenar los resultados por porcentaje de coincidencia
-//     matches.sort((a, b) => b.matchPercentage - a.matchPercentage);
-//     console.log(matches);
-//     return matches; // Devuelve los usuarios ordenados por mejor compatibilidad
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
 
 export const auxiliarMatchmaking = async (user_id) => {
   try {
@@ -484,17 +178,26 @@ export const auxiliarMatchmaking = async (user_id) => {
 const calculateCompatibility = async (user_id) => {
   try {
     let user = formatResponse(await getUserPreferencess(user_id));
+    //ocupo conseguir a las personas que sigo, para que no me salgan otra vez
+    const followed = await Follower.findAll({
+      where: { follower_id: user_id },
+      attributes: ["followed_id"],
+    });
+    const followedId = followed.map((el) => el.followed_id);
     const topicIds = user.map((pref) => pref.topic_id);
+    console.log(followedId);
     const matchingUsers = await UserPreference.findAll({
       attributes: ["user_id"],
       where: {
         topic_id: {
-          [Op.in]: topicIds,
+          [Op.in]: topicIds, // Incluye los IDs de temas en topicIds
         },
-        user_id: {
-          [Op.ne]: user_id,
-        },
+        [Op.and]: [
+          { user_id: { [Op.ne]: user_id } }, // Diferente al usuario actual
+          { user_id: { [Op.notIn]: followedId } }, // No esté en el arreglo de seguidos
+        ],
       },
+
       group: ["user_id"],
       raw: true,
     });
@@ -532,7 +235,10 @@ const calculateCompatibility = async (user_id) => {
 
         if (otherPref) {
           // Peso de la relación basado en roles
-          const connectionWeight = getConnectionWeight(userPref.type, otherPref.type);
+          const connectionWeight = getConnectionWeight(
+            userPref.type,
+            otherPref.type
+          );
 
           // Aumentar puntaje de tema por el peso de la conexión
           topicMatchScore += connectionWeight;
@@ -542,8 +248,12 @@ const calculateCompatibility = async (user_id) => {
             otherPref.tags.includes(tag)
           ).length;
 
-          const totalTags = Math.max(userPref.tags.length, otherPref.tags.length);
-          const tagMatchPercentage = totalTags > 0 ? (commonTagsCount / totalTags) * 100 : 100;
+          const totalTags = Math.max(
+            userPref.tags.length,
+            otherPref.tags.length
+          );
+          const tagMatchPercentage =
+            totalTags > 0 ? (commonTagsCount / totalTags) * 100 : 100;
 
           // Ajustar el porcentaje de coincidencia de tags
           totalTagMatchPercentage += tagMatchPercentage * connectionWeight;
@@ -552,12 +262,14 @@ const calculateCompatibility = async (user_id) => {
       });
 
       // Promedio de coincidencia de tags entre temas comparados
-      const averageTagMatchPercentage = topicsCompared > 0 ? totalTagMatchPercentage / topicsCompared : 0;
+      const averageTagMatchPercentage =
+        topicsCompared > 0 ? totalTagMatchPercentage / topicsCompared : 0;
 
       // Cálculo de puntaje total y puntaje máximo posible
       // 80% del peso se basa en roles y temas, y 20% en coincidencia de tags
-      const totalScore = topicMatchScore * 5 * 0.9 + (averageTagMatchPercentage * 0.1);
-      const maxScore = (userPrefByTopic.size * 5) * 1.5; // Puntaje máximo posible considerando el mayor peso
+      const totalScore =
+        topicMatchScore * 5 * 0.9 + averageTagMatchPercentage * 0.1;
+      const maxScore = userPrefByTopic.size * 5 * 1.5; // Puntaje máximo posible considerando el mayor peso
 
       // Convertir el puntaje en un porcentaje sobre 100
       const matchPercentage = Math.min((totalScore / maxScore) * 100, 100);
@@ -579,13 +291,20 @@ const calculateCompatibility = async (user_id) => {
 
 // Función para obtener el peso entre combinaciones de roles
 function getConnectionWeight(role1, role2) {
-  if ((role1 === "explorador" && role2 === "mentor") || (role1 === "mentor" && role2 === "explorador")) {
+  if (
+    (role1 === "explorador" && role2 === "mentor") ||
+    (role1 === "mentor" && role2 === "explorador")
+  ) {
     return 1.5; // Mucho peso
   }
   if (role1 === "entusiasta" && role2 === "entusiasta") {
     return 1.5; // Mucho peso
   }
-  if((role1 === 'mentor' && role2 === 'entusiasta') || (role1 === 'entusiasta' || role2 === 'mentor')){
+  if (
+    (role1 === "mentor" && role2 === "entusiasta") ||
+    role1 === "entusiasta" ||
+    role2 === "mentor"
+  ) {
     return 0.5;
   }
   return 1; // Peso normal para otras combinaciones
@@ -600,7 +319,6 @@ function formatResponse(data) {
     tags: item.userPreferenceTags.map((tag) => tag.tag_id),
   }));
 }
-
 
 const getUserPreferencesTags = async (userTopics) => {
   return await Promise.all(

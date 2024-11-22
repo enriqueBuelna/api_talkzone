@@ -7,6 +7,17 @@ import { VoiceRoomMember } from "../models/voice_room_member.model.js";
 import { VoiceRoomTag } from "../models/voice_room_tag.model.js";
 import { Tag } from "../models/tag.models.js";
 import { getUserPreferencess } from "./users.services.js";
+import { Follower } from "../models/follower.model.js";
+import { createNotification } from "./notification.services.js";
+
+export const verifyStatuss = async (room_id) => {
+  try {
+    const exists = await VoiceRoom.findByPk(room_id);
+    return exists;
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 export const createVoiceRoomService = async (
   room_name,
@@ -34,6 +45,26 @@ export const createVoiceRoomService = async (
       left_at: null,
       type: "host",
     });
+
+    let followers = await Follower.findAll({
+      where: { followed_id: host_user_id },
+    });
+    followers.forEach((el) => console.log(el.follower_id));
+
+    await Promise.all(
+      followers.map(async (follower) => {
+        await createNotification(
+          host_user_id,
+          follower.follower_id,
+          "room_open",
+          null,
+          null,
+          null,
+          null,
+          voice_room.id
+        );
+      })
+    );
     //DESCOMENTAR ESTO , 05 DE NOVIEMBRE
     // await Promise.all(
     //   tags.map(async (tag) => {
@@ -90,7 +121,7 @@ export const getVoiceRooms = async (user_id) => {
     let topics_ids = await getUserPreferencess(user_id);
     topics_ids = topics_ids.map((item) => item.topic_id);
     let rooms = await VoiceRoom.findAll({
-      where: { topic_id: topics_ids, room_status: 'active' },
+      where: { topic_id: topics_ids, room_status: "active" },
       include: [
         {
           model: VoiceRoomMember,
@@ -125,7 +156,7 @@ export const getVoiceRooms = async (user_id) => {
           attributes: ["username", "profile_picture", "id"], // Los atributos que quieres devolver
         },
       ],
-      attributes: ["id", "room_name", "topic_id","room_status"],
+      attributes: ["id", "room_name", "topic_id", "room_status"],
     });
 
     return rooms;
@@ -296,15 +327,13 @@ export const changeInStage = async (option, room_id, user_id) => {
 export const closeVoiceRoom = async (room_id) => {
   try {
     const room = await VoiceRoom.findOne({
-      where: {id:room_id}
-    })
-    if(!room){
+      where: { id: room_id },
+    });
+    if (!room) {
       throw Error("La sala no existe");
     }
     await room.update({
-      room_status: "closed"  
-    })
-  } catch (error) {
-    
-  }
-}
+      room_status: "closed",
+    });
+  } catch (error) {}
+};

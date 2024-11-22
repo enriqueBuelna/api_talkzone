@@ -18,7 +18,7 @@ export const Like = sequelize.define(
     },
     post_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: Post,
         key: "id",
@@ -36,7 +36,7 @@ export const Like = sequelize.define(
     },
     comment_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: Comment ,
         key: "id",
@@ -70,7 +70,7 @@ Like.belongsTo(Post, {
   foreignKey: {
     name:"post_id",
     target:"id",
-    allowNull:false,
+    allowNull:true,
     onDelete:"CASCADE"
   }
 });
@@ -90,7 +90,7 @@ Like.belongsTo(Comment, {
   foreignKey: {
     name:"comment_id",
     target:"id",
-    allowNull:false,
+    allowNull:true,
     onDelete:"CASCADE"
   }
 });

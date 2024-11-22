@@ -20,6 +20,10 @@ export const CommunityMember = sequelize.define(
       type: DataTypes.ENUM("member", "admin"),
       defaultValue: "member",
     },
+    type:{
+      type: DataTypes.ENUM("mentor","entusiasta","explorador","otro"),
+      defaultValue: "otro"
+    },
     user_id: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -70,4 +74,14 @@ CommunityMember.belongsTo(User, {
     allowNull:false,
     onDelete:"CASCADE"
   }
+});
+
+Community.hasMany(CommunityMember, {
+  foreignKeyConstraints: true,
+  foreignKey: {
+    name:"group_id",
+    target:"id",
+    allowNull:false,
+    onDelete:"CASCADE"
+  },
 });

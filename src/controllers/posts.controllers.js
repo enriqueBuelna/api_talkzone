@@ -7,11 +7,24 @@ import {
   getPostByIdService,
   getPostAll,
   getPostFriends,
-  getLikePost
+  getLikePost,
+  getGroupPost
 } from "../services/post.services.js";
 
+export const getPostGroup = async (req, res) => {
+  console.log("HOLA")
+  const { community_id, page } = req.query;
+  try {
+    let results = await getGroupPost(community_id, page);
+    res.status(201).json(results);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const createPost = async (req, res) => {
-  const { user_id, content, media_url, visibility, user_preference_id, tags } = req.body;
+  const { user_id, content, media_url, visibility, user_preference_id, tags, community_id, type_community } =
+    req.body;
 
   try {
     const newPost = await createPostService(
@@ -20,7 +33,9 @@ export const createPost = async (req, res) => {
       media_url,
       visibility,
       user_preference_id,
-      tags
+      tags,
+      community_id,
+      type_community
     );
     return res.status(201).json(newPost);
   } catch (error) {
@@ -30,12 +45,12 @@ export const createPost = async (req, res) => {
 };
 
 export const getPostById = async (req, res) => {
-  const {id} = req.query;
+  const { id } = req.query;
   try {
     const post = await getPostByIdService(id);
     return res.status(201).json(post);
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 };
 
@@ -86,32 +101,28 @@ export const getRelevantPosts = async (req, res) => {
   } catch (error) {}
 };
 
-export const getAllPost = async (req, res ) => {
-  const {user_id, page} = req.query;
+export const getAllPost = async (req, res) => {
+  const { user_id, page } = req.query;
   try {
     let results = await getPostAll(user_id, page);
     res.status(201).json(results);
   } catch (error) {
     console.log(error);
   }
-}
+};
 
 export const getFriendsPost = async (req, res) => {
-  const {user_id} = req.query;
+  const { user_id } = req.query;
   try {
     let results = await getPostFriends(user_id);
     res.status(201).json(results);
-  } catch (error) {
-    
-  }
-}
+  } catch (error) {}
+};
 
 export const getPostLike = async (req, res) => {
-  const {user_id, page} = req.query;
+  const { user_id, page } = req.query;
   try {
     let results = await getLikePost(user_id, page);
     res.status(201).json(results);
-  } catch (error) {
-    
-  }
-}
+  } catch (error) {}
+};

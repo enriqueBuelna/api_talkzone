@@ -7,7 +7,8 @@ import {
   getPostFollowing,
   getRelevantPosts,
   getFriendsPost,
-  getPostLike
+  getPostLike,
+  getPostGroup
 } from "../controllers/posts.controllers.js";
 import { getYourPost } from "../services/post.services.js";
 
@@ -21,5 +22,6 @@ router.get("/posts/getForYou", getAllPost);
 router.get("/posts/getPostFriends", getFriendsPost);
 router.get("/posts/getYourPost", getYourPost)
 router.get("/posts/getLikePost",getPostLike);
+router.get("/posts/getPostGroup", getPostGroup);
 
 export default router;

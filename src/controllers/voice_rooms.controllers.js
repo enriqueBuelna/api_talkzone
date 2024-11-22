@@ -3,7 +3,8 @@ import {
   createVoiceRoomService,
   getVoiceRoomByIdService,
   getVoiceRooms,
-  closeVoiceRoom
+  closeVoiceRoom,
+  verifyStatuss,
 } from "../services/voice_room.service.js";
 // Controlador para crear una sala de voz
 export const createVoiceRoom = async (req, res) => {
@@ -22,6 +23,17 @@ export const createVoiceRoom = async (req, res) => {
   } catch (error) {
     console.error("Error al crear la sala de voz:", error);
     return res.status(500).json({ error: "Error al crear la sala de voz" });
+  }
+};
+
+export const verifyStatus = async (req, res) => {
+  const { room_id } = req.query;
+  try {
+    const result = await verifyStatuss(room_id);
+    let aux = result.room_status === "closed" ? false : true;
+    return res.status(201).json(aux);
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -142,10 +154,10 @@ export const getVoiceRoomsByPreferences = async (req, res) => {
 
 export const closeVoiceRoomm = async (req, res) => {
   try {
-    const {room_id} = req.body;
+    const { room_id } = req.body;
     const room = await closeVoiceRoom(room_id);
     return res.status(201).json(room);
   } catch (error) {
-    console.log("A")
+    console.log("A");
   }
-}
+};

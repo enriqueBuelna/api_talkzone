@@ -20,7 +20,7 @@ export const Notification = sequelize.define(
         'like',
         'comment',
         'mention',
-        'friend_request',
+        'follower',
         'message',
         'room_open',
         'other',

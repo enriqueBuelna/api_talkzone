@@ -14,13 +14,49 @@ import { getUserPreferencess } from "./users.services.js";
 import { Like } from "../models/like.model.js";
 import { json, Op } from "sequelize";
 // Crear una nueva publicación
+export const getGroupPost = async (community_id, page, pageSize = 10) => {
+  try {
+    const offset = (page - 1) * pageSize;
+    const matchingPost = await Post.findAll({
+      where: {
+        community_id,
+      },
+      include: [
+        {
+          model: User,
+          as: "post_user",
+          attributes: ["id", "username", "gender", "profile_picture"],
+        },
+        {
+          model: UserPreference,
+          as: "post_user_preference",
+          include: [
+            {
+              model: Topic,
+              attributes: ["topic_name"],
+            },
+          ],
+          attributes: ["topic_id", "type"],
+        },
+      ],
+      limit: pageSize,
+      offset: offset,
+    });
+    return matchingPost;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const createPostService = async (
   user_id,
   content,
   media_url,
   visibility,
   user_preference_id,
-  tags
+  tags,
+  community_id,
+  type_community
 ) => {
   try {
     const newPost = await Post.create({
@@ -29,6 +65,8 @@ export const createPostService = async (
       media_url,
       visibility,
       user_preference_id,
+      community_id,
+      type_community,
     });
 
     const matchingPost = await Post.findOne({
@@ -353,6 +391,7 @@ export const getPostTopicsService = async (id, page = 1, limit = 10) => {
 export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
   try {
     const user_preferences = formatResponse(await getUserPreferencess(user_id));
+    console.log(user_preferences);
     const topicIds = user_preferences.map((pref) => pref.id);
 
     const offset = (page - 1) * pageSize;
@@ -362,6 +401,7 @@ export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
         user_preference_id: {
           [Op.in]: topicIds,
         },
+        community_id: null,
       },
       include: [
         {
@@ -406,12 +446,12 @@ function formatResponse(data) {
 export const getPostFriends = async (user_id) => {
   let usuarios = await getFollowing(user_id);
   let usuariosId = usuarios.map((el) => el.id);
-  console.log(usuariosId);
   const matchingPost = await Post.findAll({
     where: {
       user_id: {
         [Op.in]: usuariosId,
       },
+      community_id: null,
     },
     include: [
       {

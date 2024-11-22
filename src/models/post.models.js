@@ -1,9 +1,8 @@
 import { DataTypes, sql } from "@sequelize/core";
 import sequelize from "../../db/db.js";
 import { User } from "./user.model.js";
-import { Topic } from "./topic.models.js";
 import { UserPreference } from "./user_preferences.model.js";
-
+import { Community } from "./communitie.model.js";
 export const Post = sequelize.define(
   "Post",
   {
@@ -57,13 +56,26 @@ export const Post = sequelize.define(
     },
     user_preference_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: UserPreference,
         key: "id",
       },
       onDelete: "CASCADE",
     },
+    community_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: Community,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
+    type_community:{
+      type: DataTypes.ENUM('questions','resources-academic','experiences','opinions', 'resources-external'),
+      allowNull:true
+    }
   },
   {
     tableName: "Posts", // Nombre de la tabla en la base de datos
@@ -73,45 +85,54 @@ export const Post = sequelize.define(
 
 // // Definir las relaciones
 Post.belongsTo(User, {
-  as: 'post_user',
+  as: "post_user",
   foreignKeyConstraints: true,
   foreignKey: {
-    name:"user_id",
-    target:"id",
-    allowNull:false,
-    onDelete:"CASCADE"
+    name: "user_id",
+    target: "id",
+    allowNull: false,
+    onDelete: "CASCADE",
   },
 });
 
 Post.belongsTo(UserPreference, {
-  as: 'post_user_preference',
+  as: "post_user_preference",
   foreignKeyConstraints: true,
   foreignKey: {
-    name:"user_preference_id",
-    target:"id",
-    allowNull:false,
-    onDelete:"CASCADE"
-  }
+    name: "user_preference_id",
+    target: "id",
+    allowNull: true,
+    onDelete: "CASCADE",
+  },
 });
 
 // // Si tienes una relación de posts compartidos
 Post.belongsTo(Post, {
   as: "SharedPost",
   foreignKey: {
-    name:"shared_post_id",
-    target:"id",
-    allowNull:true,
-    onDelete:"CASCADE"
+    name: "shared_post_id",
+    target: "id",
+    allowNull: true,
+    onDelete: "CASCADE",
   },
-  foreignKeyConstraints: true
+  foreignKeyConstraints: true,
 });
 
-
+Post.belongsTo(Community, {
+  as: "community",
+  foreignKey: {
+    name: "community_id",
+    target: "id",
+    allowNull: true,
+    onDelete: "CASCADE",
+  },
+  foreignKeyConstraints: true,
+});
 //RELACIONES HAS MANY
 
 User.hasMany(Post, {
   foreignKey: {
-    name:"user_id",
-    onDelete: "CASCADE"
-  }
+    name: "user_id",
+    onDelete: "CASCADE",
+  },
 });
