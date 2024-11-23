@@ -10,7 +10,7 @@ import {
 const router = Router();
 
 router.post('/followers/followUser', followUser);
-router.delete('/followers/unfollowUser', unfollowUser);
+router.post('/followers/unfollowUser', unfollowUser);
 router.get('/followers/getFollowers/:id', getFollowers);
 router.get('/followers/getFollowing/:id', getFollowing);
 

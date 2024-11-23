@@ -93,7 +93,9 @@ export const filteredPreference = async (req, res) => {
       topicsIdExploradores,
       genderOption,
       connectOption,
-      onlyMentoresOption;
+      onlyMentoresOption,
+      onlyEntusiastasOption,
+      onlyExploradoresOption;
     // let topicsIdKnow, topicsIdLearn, genderOption, connectOption;
     if (topicsMentores) {
       topicsIdMentores = topicsMentores.map((topic) => topic.topic_id);
@@ -116,6 +118,12 @@ export const filteredPreference = async (req, res) => {
 
     if (onlyMentores) {
       onlyMentoresOption = onlyMentores[0];
+    }
+    if (onlyEntusiastas) {
+      onlyEntusiastasOption = onlyEntusiastas[0];
+    }
+    if (onlyExploradores) {
+      onlyExploradoresOption = onlyExploradores[0];
     }
     //ocupo llamar a la prueba
     let usuarios = await auxiliarMatchmaking(user_id);
@@ -151,23 +159,35 @@ export const filteredPreference = async (req, res) => {
         }
       }
       if (topicsEntusiastas) {
-        let arr2 = el.userPreferences.map((topic) => topic.topic_id);
+        let arr2;
+        if (onlyEntusiastasOption) {
+          arr2 = el.userPreferences
+            .filter((topic) => topic.type === "entusiasta")
+            .map((topic) => topic.topic_id);
+        } else {
+          arr2 = el.userPreferences.map((topic) => topic.topic_id);
+        }
         tuvoTodo = isSubset(topicsIdEntusiastas, arr2);
         if (!tuvoTodo) {
           return false;
         }
       }
       if (topicsExploradores) {
-        let arr2 = el.userPreferences.map((topic) => topic.topic_id);
+        let arr2;
+        if (onlyExploradoresOption) {
+          arr2 = el.userPreferences
+            .filter((topic) => topic.type === "mentor")
+            .map((topic) => topic.topic_id);
+        } else {
+          arr2 = el.userPreferences.map((topic) => topic.topic_id);
+        }
         tuvoTodo = isSubset(topicsIdExploradores, arr2);
         if (!tuvoTodo) {
           return false;
         }
       }
-      console.log(el.user_id);
       usuariosFiltered.push(el);
     });
-    console.log(" _ ");
     // console.log(usuariosFiltered);
     res.status(201).json(usuariosFiltered);
   } catch (error) {

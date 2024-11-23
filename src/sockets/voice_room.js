@@ -15,6 +15,7 @@ export const voiceRoomSocket = (socket, io) => {
     if (newUser.dataValues.type === "host") {
       roomHosts[payload.room_id] = payload.user_id; // Guarda el `user_id` del host
     }
+    console.log(newUser);
     socket.emit("myUserVoiceRoom", newUser);
     io.to(payload.room_id).emit("newUserVoiceRoom", newUser);
   });

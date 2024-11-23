@@ -6,7 +6,7 @@ export const followUser = async (req, res) => {
 
   try {
     const newFollow = await followerService.followUser(follower_id, followed_id);
-    return res.status(201).json({ message: "Usuario seguido con éxito", newFollow });
+    return res.status(201).json(true);
   } catch (error) {
     console.error("Error al seguir al usuario:", error);
     return res.status(400).json({ message: error.message });
@@ -18,7 +18,7 @@ export const unfollowUser = async (req, res) => {
 
   try {
     const result = await followerService.unfollowUser(follower_id, followed_id);
-    return res.status(200).json(result);
+    return res.status(200).json(true);
   } catch (error) {
     console.error("Error al dejar de seguir al usuario:", error);
     return res.status(400).json({ message: error.message });

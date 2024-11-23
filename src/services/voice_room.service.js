@@ -15,9 +15,9 @@ export const verifyStatuss = async (room_id) => {
     const exists = await VoiceRoom.findByPk(room_id);
     return exists;
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
 
 export const createVoiceRoomService = async (
   room_name,
@@ -44,6 +44,7 @@ export const createVoiceRoomService = async (
       joined_at: new Date(),
       left_at: null,
       type: "host",
+      in_stage:true
     });
 
     let followers = await Follower.findAll({
@@ -133,6 +134,7 @@ export const getVoiceRooms = async (user_id) => {
             },
           ],
           attributes: ["id"],
+          where: { left_at: null },
         },
         {
           model: Topic,
@@ -195,6 +197,7 @@ export const addMemberUser = async (room_id, user_id) => {
       // }
 
       let in_stage = false;
+      console.log(host.host_user_id, " yyyyyyyyy ", user.id);
       if (host.host_user_id === user.id) {
         in_stage = true;
       }
@@ -209,7 +212,6 @@ export const addMemberUser = async (room_id, user_id) => {
       let in_stage = false;
       let type = "member";
       if (host.host_user_id === user.id) {
-        console.log("HHHHHHHHHHHHHHHHHHHHHH");
         in_stage = true;
         type = "host";
       }
@@ -222,6 +224,7 @@ export const addMemberUser = async (room_id, user_id) => {
         in_stage,
         type,
       });
+      console.log("entro aqui y me suda toda la polla");
     }
 
     // Usa setDataValue para añadir la propiedad
@@ -239,7 +242,6 @@ export const addMemberUser = async (room_id, user_id) => {
         user.setDataValue("in_stage", false);
       }
     }
-
     return user;
   } catch (error) {
     console.log(error);
