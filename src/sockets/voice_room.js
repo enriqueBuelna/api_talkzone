@@ -4,6 +4,7 @@ import {
   userLeft,
   changeInStage,
   closeVoiceRoom,
+  isMoreThan10Minutes,
 } from "../services/voice_room.service.js";
 import { users } from "./principalSocket.socket.js";
 const roomHosts = {}; // { room_id: user_id del host }
@@ -15,7 +16,6 @@ export const voiceRoomSocket = (socket, io) => {
     if (newUser.dataValues.type === "host") {
       roomHosts[payload.room_id] = payload.user_id; // Guarda el `user_id` del host
     }
-    console.log(newUser);
     socket.emit("myUserVoiceRoom", newUser);
     io.to(payload.room_id).emit("newUserVoiceRoom", newUser);
   });
@@ -65,7 +65,9 @@ export const voiceRoomSocket = (socket, io) => {
 
   // Salir de una sala
   socket.on("leaveRoom", async (payload) => {
-    await userLeft(payload.room_id, payload.user_id);
+    await userLeft(payload.room_id, payload.user_id, payload.roomLogId);
+    //verificar si ya cumpli con los 5 minutos de estar ahi, si si, le mando un true, si no, un false
+    socket.emit("imWent", await isMoreThan10Minutes(payload.user_id, payload.room_id));
     io.to(payload.room_id).emit("userLeft", payload.user_id);
     if (roomHosts[payload.room_id] === payload.user_id) {
       await closeVoiceRoom(payload.room_id);

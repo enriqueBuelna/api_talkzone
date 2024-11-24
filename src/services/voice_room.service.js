@@ -9,7 +9,10 @@ import { Tag } from "../models/tag.models.js";
 import { getUserPreferencess } from "./users.services.js";
 import { Follower } from "../models/follower.model.js";
 import { createNotification } from "./notification.services.js";
-
+import { RoomRating } from "../models/room_rating.model.js";
+import { UserHostRanking } from "../models/user_host_ranking.model.js";
+import { RoomLog } from "../models/room_logs.model.js";
+import { Op } from "sequelize";
 export const verifyStatuss = async (room_id) => {
   try {
     const exists = await VoiceRoom.findByPk(room_id);
@@ -44,7 +47,7 @@ export const createVoiceRoomService = async (
       joined_at: new Date(),
       left_at: null,
       type: "host",
-      in_stage:true
+      in_stage: true,
     });
 
     let followers = await Follower.findAll({
@@ -156,6 +159,13 @@ export const getVoiceRooms = async (user_id) => {
           model: User,
           as: "host_user", // Asegúrate de que esto coincida con el alias de tu asociación
           attributes: ["username", "profile_picture", "id"], // Los atributos que quieres devolver
+          include: [
+            {
+              model: UserHostRanking,
+              attributes: ["average_rating"],
+              as: "rating_",
+            },
+          ],
         },
       ],
       attributes: ["id", "room_name", "topic_id", "room_status"],
@@ -190,16 +200,20 @@ export const addMemberUser = async (room_id, user_id) => {
       attributes: ["id", "profile_picture", "username"],
     });
 
+    let roomLog;
+
     if (existingMember) {
-      // Si el usuario ya está en la sala (left_at es null), no hacemos nada
-      // if (existingMember.left_at === null) {
-      //   throw new Error("El usuario ya está en la sala de voz.");
-      // }
+      //para cuando un usuario ya entro a la sala
 
       let in_stage = false;
-      console.log(host.host_user_id, " yyyyyyyyy ", user.id);
       if (host.host_user_id === user.id) {
         in_stage = true;
+      } else {
+        roomLog = await RoomLog.create({
+          room_id,
+          user_id,
+          host_user_id: host.host_user_id,
+        });
       }
       // Si el usuario había salido, actualizamos los tiempos para indicar que ha vuelto a entrar
       await existingMember.update({
@@ -224,7 +238,12 @@ export const addMemberUser = async (room_id, user_id) => {
         in_stage,
         type,
       });
-      console.log("entro aqui y me suda toda la polla");
+
+      roomLog = await RoomLog.create({
+        room_id,
+        user_id,
+        host_user_id: host.host_user_id,
+      });
     }
 
     // Usa setDataValue para añadir la propiedad
@@ -241,6 +260,9 @@ export const addMemberUser = async (room_id, user_id) => {
       } else {
         user.setDataValue("in_stage", false);
       }
+    }
+    if (roomLog) {
+      user.setDataValue("roomLog", roomLog.id);
     }
     return user;
   } catch (error) {
@@ -293,22 +315,41 @@ export const getAllMemberUsers = async (room_id) => {
   }
 };
 
-export const userLeft = async (room_id, user_id) => {
+export const userLeft = async (room_id, user_id, roomLogId) => {
   try {
     const member = await VoiceRoomMember.findOne({
       where: { room_id, user_id, left_at: null },
+    });
+
+    let host = await VoiceRoom.findOne({
+      where: { id: room_id },
+      attributes: ["host_user_id"],
     });
 
     if (!member) {
       throw new Error("El usuario no está actualmente en la sala de voz.");
     }
 
+    if (host.host_user_id !== user_id) {
+      console.log("HOLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", roomLogId);
+      let roomLog = await RoomLog.findOne({
+        where: { id: roomLogId },
+      });
+
+      await roomLog.update({
+        left_at: new Date(),
+      });
+    }
+    console.log("azaaaaaaaaaaaaa");
     // Actualizamos el campo left_at con la hora de salida
     await member.update({
       left_at: new Date(),
       in_stage: false,
     });
-  } catch (error) {}
+    console.log("LLEGO AQUI");
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const changeInStage = async (option, room_id, user_id) => {
@@ -339,3 +380,176 @@ export const closeVoiceRoom = async (room_id) => {
     });
   } catch (error) {}
 };
+
+export const isMoreThan10Minutes = async (user_id, room_id) => {
+  try {
+    let host = await VoiceRoom.findOne({ where: { id: room_id } });
+
+    let existsValoration = await existsValorationMe(
+      user_id,
+      room_id,
+      host.host_user_id
+    );
+
+    if (!existsValoration) {
+      let more = await getUserTotalTimeInRooms(user_id, room_id);
+      if (more > 10) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      false;
+    }
+  } catch (error) {}
+};
+
+const existsValorationMe = async (user_id, room_id, host_user_id) => {
+  let valoration = await RoomRating.findOne({
+    where: {
+      user_id,
+      room_id,
+      host_user_id,
+    },
+  });
+  if (!valoration) {
+    return false;
+  }
+  return true;
+};
+
+// export const addValorationRoom = async (room_id, rating, user_id) => {
+//   try {
+//     let host = await VoiceRoom.findOne({
+//       where: { id: room_id },
+//     });
+
+//     let valoration = await RoomRating.findOne({
+//       where: {
+//         user_id,
+//         room_id,
+//         host_user_id: host.host_user_id,
+//       },
+//     });
+//     if (!valoration) {
+//       let addValoration = await RoomRating.create({
+//         room_id,
+//         host_user_id: host.host_user_id,
+//         rating,
+//         user_id,
+//       });
+
+//       let tableRatingComplete = await UserHostRanking.findOne({
+//         where: {
+//           user_id: host.host_user_id
+//         }
+//       })
+
+//       if(!tableRatingComplete){
+//         tableRatingComplete = await UserHostRanking.create({
+//           user_id: host.host_user_id
+//         })
+//       }
+
+//       await tableRatingComplete.update({
+//         total_ratings: total_ratings + 1,
+//       })
+
+//       await tableRatingComplete.update({
+//         average_rating: tableRatingComplete.total_ratings /
+//       })
+//     }
+//     return true;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
+export const addValorationRoom = async (room_id, rating, user_id) => {
+  try {
+    // Encontrar la sala y obtener al host
+    let host = await VoiceRoom.findOne({
+      where: { id: room_id },
+    });
+
+    if (!host) {
+      throw new Error("La sala de voz no existe.");
+    }
+
+    let host_user_id = host.host_user_id;
+
+    // Verificar si ya existe una valoración
+    let valoration = await RoomRating.findOne({
+      where: {
+        user_id,
+        room_id,
+        host_user_id,
+      },
+    });
+
+    if (valoration) {
+      return false; // Ya existe una valoración
+    }
+
+    // Crear una nueva valoración
+    await RoomRating.create({
+      room_id,
+      host_user_id,
+      rating,
+      user_id,
+    });
+
+    // Verificar si existe el registro en UserHostRanking
+    let userHostRanking = await UserHostRanking.findOne({
+      where: { user_id: host_user_id },
+    });
+
+    if (!userHostRanking) {
+      // Si no existe, se crea un registro nuevo
+      userHostRanking = await UserHostRanking.create({
+        user_id: host_user_id,
+        average_rating: rating,
+        total_ratings: 1,
+      });
+    } else {
+      // Actualizar total_ratings y recalcular el average_rating
+      const newTotalRatings = userHostRanking.total_ratings + 1;
+      const newAverageRating =
+        (userHostRanking.average_rating * userHostRanking.total_ratings +
+          rating) /
+        newTotalRatings;
+
+      await userHostRanking.update({
+        total_ratings: newTotalRatings,
+        average_rating: newAverageRating,
+      });
+    }
+
+    return true; // Valoración añadida exitosamente
+  } catch (error) {
+    console.error("Error al añadir valoración:", error);
+    return false;
+  }
+};
+
+async function getUserTotalTimeInRooms(user_id, room_id) {
+  const logs = await RoomLog.findAll({
+    where: {
+      user_id,
+      room_id,
+      left_at: { [Op.ne]: null }, // Asegurarse de que left_at no sea null
+    },
+  });
+
+  let totalTimeInMinutes = 0;
+
+  logs.forEach((log) => {
+    // Calcula la diferencia entre joined_at y left_at
+    const joinedAt = new Date(log.joined_at);
+    const leftAt = new Date(log.left_at);
+    const timeInMinutes = (leftAt - joinedAt) / 1000 / 60; // Convierte a minutos
+    totalTimeInMinutes += timeInMinutes;
+  });
+
+  return totalTimeInMinutes;
+}

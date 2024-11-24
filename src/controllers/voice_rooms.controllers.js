@@ -5,6 +5,7 @@ import {
   getVoiceRooms,
   closeVoiceRoom,
   verifyStatuss,
+  addValorationRoom
 } from "../services/voice_room.service.js";
 // Controlador para crear una sala de voz
 export const createVoiceRoom = async (req, res) => {
@@ -25,6 +26,16 @@ export const createVoiceRoom = async (req, res) => {
     return res.status(500).json({ error: "Error al crear la sala de voz" });
   }
 };
+
+export const addRating = async (req, res) => {
+  let {room_id, user_id, rating} = req.body;
+  try {
+    let result = await addValorationRoom(room_id, rating, user_id);
+    res.status(201).json(result);
+  } catch (error) {
+    
+  }
+}
 
 export const verifyStatus = async (req, res) => {
   const { room_id } = req.query;

@@ -240,6 +240,8 @@ const calculateCompatibility = async (user_id) => {
             otherPref.type
           );
 
+          console.log("CONEEEENCTION ", connectionWeight);
+
           // Aumentar puntaje de tema por el peso de la conexión
           topicMatchScore += connectionWeight;
 
@@ -291,6 +293,7 @@ const calculateCompatibility = async (user_id) => {
 
 // Función para obtener el peso entre combinaciones de roles
 function getConnectionWeight(role1, role2) {
+  console.log(role1, role2);
   if (
     (role1 === "explorador" && role2 === "mentor") ||
     (role1 === "mentor" && role2 === "explorador")
@@ -302,8 +305,7 @@ function getConnectionWeight(role1, role2) {
   }
   if (
     (role1 === "mentor" && role2 === "entusiasta") ||
-    role1 === "entusiasta" ||
-    role2 === "mentor"
+    (role1 === "entusiasta" && role2 === "mentor")
   ) {
     return 0.5;
   }
