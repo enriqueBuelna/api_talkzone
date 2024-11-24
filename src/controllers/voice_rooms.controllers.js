@@ -1,3 +1,4 @@
+import { BlockedRoomUser } from "../models/blocked_room_user.model.js";
 import { VoiceRoom } from "../models/voice_rooms.models.js";
 import {
   createVoiceRoomService,
@@ -5,7 +6,7 @@ import {
   getVoiceRooms,
   closeVoiceRoom,
   verifyStatuss,
-  addValorationRoom
+  addValorationRoom,
 } from "../services/voice_room.service.js";
 // Controlador para crear una sala de voz
 export const createVoiceRoom = async (req, res) => {
@@ -28,20 +29,28 @@ export const createVoiceRoom = async (req, res) => {
 };
 
 export const addRating = async (req, res) => {
-  let {room_id, user_id, rating} = req.body;
+  let { room_id, user_id, rating } = req.body;
   try {
     let result = await addValorationRoom(room_id, rating, user_id);
     res.status(201).json(result);
-  } catch (error) {
-    
-  }
-}
+  } catch (error) {}
+};
 
 export const verifyStatus = async (req, res) => {
-  const { room_id } = req.query;
+  const { room_id, user_id } = req.query;
   try {
     const result = await verifyStatuss(room_id);
-    let aux = result.room_status === "closed" ? false : true;
+    let aux = result.room_status === "closed" ? 'closed' : 'open';
+    const result2 = await BlockedRoomUser.findOne({
+      where: {
+        room_id,
+        user_id,
+      },
+    });
+
+    if (result2) {
+      aux = 'deleted';
+    }
     return res.status(201).json(aux);
   } catch (error) {
     console.log(error);

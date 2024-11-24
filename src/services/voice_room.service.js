@@ -330,8 +330,7 @@ export const userLeft = async (room_id, user_id, roomLogId) => {
       throw new Error("El usuario no está actualmente en la sala de voz.");
     }
 
-    if (host.host_user_id !== user_id) {
-      console.log("HOLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", roomLogId);
+    if (host.host_user_id !== user_id && roomLogId) {
       let roomLog = await RoomLog.findOne({
         where: { id: roomLogId },
       });
