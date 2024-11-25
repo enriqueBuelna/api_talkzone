@@ -10,7 +10,7 @@ import {
 } from "../services/voice_room.service.js";
 // Controlador para crear una sala de voz
 export const createVoiceRoom = async (req, res) => {
-  const { room_name, host_user_id, topic_id, tags } = req.body;
+  const { room_name, host_user_id, topic_id, type,tags } = req.body;
 
   try {
     // Validar que se han proporcionado los campos requeridos
@@ -18,7 +18,7 @@ export const createVoiceRoom = async (req, res) => {
       room_name,
       topic_id,
       host_user_id,
-      tags
+      tags,type
     );
 
     return res.status(201).json(newVoiceRoom);

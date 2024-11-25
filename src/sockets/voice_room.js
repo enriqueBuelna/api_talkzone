@@ -8,6 +8,7 @@ import {
 } from "../services/voice_room.service.js";
 import { BlockedRoomUser } from "../models/blocked_room_user.model.js";
 import { users } from "./principalSocket.socket.js";
+import { User } from "../models/user.model.js";
 const roomHosts = {}; // { room_id: user_id del host }
 export const voiceRoomSocket = (socket, io) => {
   //admin siempre va estar en la primera posicion
@@ -16,10 +17,38 @@ export const voiceRoomSocket = (socket, io) => {
     let newUser = await addMemberUser(payload.room_id, payload.user_id);
     if (newUser.dataValues.type === "host") {
       roomHosts[payload.room_id] = payload.user_id; // Guarda el `user_id` del host
+    } else {
+      let user = await User.findOne({
+        where: {
+          id: payload.user_id,
+        },
+      });
+      const send = {
+        message: `!Bienvenido a la sala ${user.username}`,
+        from: "Bot Talkzone",
+      };
+      io.to(payload.room_id).emit("newMessage", send);
     }
     socket.emit("myUserVoiceRoom", newUser);
     io.to(payload.room_id).emit("newUserVoiceRoom", newUser);
   });
+
+  socket.on("sendMessageVr", async (payload ) => {
+    console.log("HOLAAAAAAAAAA")
+    const {message, user_id, room_id} = payload;
+    try {
+      let user = await User.findByPk(user_id);
+      if(user){
+        const send = {
+          message, 
+          from:user.username
+        }
+        io.to(room_id).emit("newMessage", send);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  })
 
   socket.on("raiseHand", (payload) => {
     const { room_id, user_id } = payload;
@@ -84,11 +113,11 @@ export const voiceRoomSocket = (socket, io) => {
         "imWent",
         await isMoreThan10Minutes(payload.user_id, payload.room_id)
       );
-    }else{
+    } else {
       await BlockedRoomUser.create({
-        room_id:payload.room_id,
-        user_id:payload.user_id
-      })
+        room_id: payload.room_id,
+        user_id: payload.user_id,
+      });
     }
     io.to(payload.room_id).emit("userLeft", payload.user_id);
     if (roomHosts[payload.room_id] === payload.user_id) {

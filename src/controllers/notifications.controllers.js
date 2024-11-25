@@ -52,8 +52,10 @@ export const getNotifications = async (req, res) => {
         // Incluir otras relaciones si es necesario
         {
           model: Like,
+          
           include: [
             {
+              as:'post',
               model: Post,
               attributes: ["id"], // Información de la publicación
             },

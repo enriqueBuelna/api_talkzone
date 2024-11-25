@@ -51,7 +51,7 @@ export const loginUserService = async ({ username, password }) => {
   if (!user) throw new Error("Usuario no encontrado");
 
   const token = jwt.sign(
-    { id: user.id, username: user.username, user_role: user.user_role },
+    { id: user.id, username: user.username, user_role: user.user_role, is_profile_complete: user.is_profile_complete },
     process.env.SECRET_KEY,
     { expiresIn: "1h" }
   );

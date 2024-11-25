@@ -28,14 +28,32 @@ export const toggleLike = async (req, res) => {
     if (existingLike) {
       // Si ya existe, eliminar el like
       await existingLike.destroy();
+      let aux;
+      if (which === "post") {
+        aux = await Post.findByPk(post_id);
+        aux.update({
+          likes_count: aux.likes_count - 1,
+        });
+      } else {
+        aux = await Comment.findByPk(comment_id);
+        aux.update({
+          comments_count: aux.comments_count - 1,
+        });
+      }
       return res.status(200).json(false);
     } else {
       // Si no existe, crear el like
       let aux;
       if (which === "post") {
         aux = await Post.findByPk(post_id);
+        aux.update({
+          likes_count: aux.likes_count + 1,
+        });
       } else {
         aux = await Comment.findByPk(comment_id);
+        aux.update({
+          comments_count: aux.comments_count - 1,
+        });
       }
 
       const like = await Like.create({ user_id, post_id, comment_id });

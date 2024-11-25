@@ -1,3 +1,4 @@
+import { User } from "../models/user.model.js";
 import {
   registerUserService,
   loginUserService,
@@ -20,6 +21,26 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const completeProfile = async (req, res) => {
+  try {
+    const {user_id} = req.body;
+
+    let user = await User.findOne({
+      where: {
+        id: user_id
+      }
+    })
+
+    user.update({
+      is_profile_complete: true
+    })
+
+    res.status(201).json(true);
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 export const loginUser = async (req, res) => {
   try {

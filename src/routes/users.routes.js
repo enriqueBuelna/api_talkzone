@@ -10,7 +10,8 @@ import {
   getFollowersFollowed,
   getBasicInfo,
   getCompleteProfile,
-  editProfile
+  editProfile,
+  completeProfile
 } from "../controllers/users.controllers.js";
 import {
   authenticateToken,
@@ -24,6 +25,7 @@ import {
 const router = Router();
 
 router.post("/users/register", registerUser);
+router.post("/users/completeProfile", completeProfile);
 router.post("/users/login", loginUser);
 router.post("/users/validateEU", validatePreRegister);
 router.post("/users/passwordChanges/validateEmail", sendEmailPasswordChange);

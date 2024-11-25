@@ -26,7 +26,8 @@ export const createVoiceRoomService = async (
   room_name,
   topic_id,
   host_user_id,
-  tags
+  tags,
+  type
 ) => {
   try {
     const topic = Topic.findByPk(topic_id);
@@ -40,6 +41,7 @@ export const createVoiceRoomService = async (
       room_name,
       topic_id,
       host_user_id,
+      type
     });
     await VoiceRoomMember.create({
       room_id: voice_room.id,

@@ -45,6 +45,14 @@ export const VoiceRoom = sequelize.define(
       },
       onDelete: "CASCADE",
     },
+    type: {
+      type: DataTypes.ENUM(
+        "explorador",
+        "mentor",
+        "entusiasta",
+      ),
+      allowNull: false,
+    },
   },
   {
     tableName: "Voice_rooms",
@@ -56,21 +64,19 @@ export const VoiceRoom = sequelize.define(
 VoiceRoom.belongsTo(User, {
   foreignKeyConstraints: true,
   foreignKey: {
-    
-    name:"host_user_id",
-    target:"id",
-    allowNull:false,
-    onDelete:"CASCADE"
+    name: "host_user_id",
+    target: "id",
+    allowNull: false,
+    onDelete: "CASCADE",
   },
-  as:"host_user",
+  as: "host_user",
 });
 VoiceRoom.belongsTo(Topic, {
   foreignKeyConstraints: true,
   foreignKey: {
-    name:"topic_id",
-    target:"id",
-    allowNull:false,
-    onDelete:"CASCADE"
+    name: "topic_id",
+    target: "id",
+    allowNull: false,
+    onDelete: "CASCADE",
   },
 });
-
