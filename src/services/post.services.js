@@ -344,100 +344,13 @@ export const getPostTopicsService = async (id, page = 1, limit = 10) => {
   }
 };
 
-// export const getPostAll = async (user_id) => {
-//   try {
-//     const user_preferences = formatResponse(await getUserPreferencess(user_id));
-//     //conseguir los ids de los topics
-//     const topicIds = user_preferences.map((pref) => pref.id);
-//     const matchingPost = await Post.findAll({
-//       where: {
-//         user_preference_id: {
-//           [Op.in]: topicIds,
-//         },
-//       },
-//       include: [
-//         {
-//           model: User,
-//           as: "post_user",
-//           attributes: ["id", "username", "gender", "profile_picture"],
-//         },
-//         {
-//           model: UserPreference,
-//           as: "post_user_preference",
-//           include: [
-//             {
-//               model: Topic,
-//               attributes: ["topic_name"],
-//             },
-//           ],
-//           attributes: ["topic_id", "type"],
-//         },
-//       ],
-//     });
-//     return matchingPost;
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
 
-// export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
-//   try {
-//     const user_preferences = formatResponse(await getUserPreferencess(user_id));
-//     console.log(user_preferences);
-//     const topicIds = user_preferences.map((pref) => pref.id);
-
-//     const offset = (page - 1) * pageSize;
-
-//     const matchingPost = await Post.findAll({
-//       where: {
-//         user_preference_id: {
-//           [Op.in]: topicIds,
-//         },
-//         community_id: null,
-//       },
-//       include: [
-//         {
-//           model: User,
-//           as: "post_user",
-//           attributes: ["id", "username", "gender", "profile_picture"],
-//         },
-//         {
-//           model: UserPreference,
-//           as: "post_user_preference",
-//           include: [
-//             {
-//               model: Topic,
-//               attributes: ["topic_name"],
-//             },
-//           ],
-//           attributes: ["topic_id", "type"],
-//         },
-//         // {
-//         //   model: Like,
-//         //   as: "post_liked",
-//         //   required: false, // Hacer que la inclusión sea opcional
-//         //   where: {
-//         //     post_id: postId,
-//         //     user_id,
-//         //   },
-//         // },
-//       ],
-//       limit: pageSize,
-//       offset: offset,
-//     });
-
-//     return matchingPost;
-//   } catch (error) {
-//     console.log(error);
-//     throw error;
-//   }
-// };
 
 export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
   try {
     const user_preferences = formatResponse(await getUserPreferencess(user_id));
     const topicIds = user_preferences.map((pref) => pref.id);
-
+    console.log(topicIds);
     const offset = (page - 1) * pageSize;
 
     const matchingPost = await Post.findAll({
@@ -446,6 +359,7 @@ export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
           [Op.in]: topicIds,
         },
         community_id: null,
+        user_id: { [Op.ne]: user_id },
       },
       include: [
         {
