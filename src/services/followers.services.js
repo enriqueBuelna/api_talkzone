@@ -46,6 +46,23 @@ export const getFollowers = async (user_id) => {
   return followers;
 };
 
+export const getActiveFollowing = async (id) => {
+  const following = await Follower.findAll({
+    where: { follower_id: id },
+    include: [
+      {
+        model: User,
+        as: "followed", // Asegúrate de que este alias coincida con tu definición de relación
+        attributes: ["id", "username", "profile_picture", "gender"], // Selecciona solo los campos deseados
+      },
+    ],
+  });
+  
+  // Mapear los resultados para obtener solo la información necesaria
+  const usersFollowing = following.map((follow) => follow.followed);
+  return usersFollowing;
+}
+
 // Listar a los usuarios seguidos por un usuario
 export const getFollowing = async (id) => {
   const following = await Follower.findAll({
@@ -54,7 +71,7 @@ export const getFollowing = async (id) => {
       {
         model: User,
         as: "followed", // Asegúrate de que este alias coincida con tu definición de relación
-        attributes: ["id", "username", "profile_picture"], // Selecciona solo los campos deseados
+        attributes: ["id", "username", "profile_picture", "is_online"], // Selecciona solo los campos deseados
       },
     ],
   });

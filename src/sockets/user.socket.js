@@ -1,3 +1,4 @@
+import { getActiveFollowing, getFollowing, getOnlineFollowers } from "../services/followers.services.js";
 import { changeOnline } from "../services/users.services.js";
 import { users } from "./principalSocket.socket.js"; // Importar el objeto `users`
 export const userGetIn = (socket) => {
@@ -8,6 +9,7 @@ export const userGetIn = (socket) => {
     await changeOnline(id_username, "online");
     //conseguir a las personas que sigo que estan online, okey?, y eso mandarlo al socket,y cuando alguien se salga, pues eso tambien, me explico?
 
-    
+    let prueba = await getActiveFollowing(id_username);
+    socket.emit("usersFollowed", prueba);
   });
 };
