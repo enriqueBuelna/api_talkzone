@@ -51,7 +51,12 @@ export const loginUserService = async ({ username, password }) => {
   if (!user) throw new Error("Usuario no encontrado");
 
   const token = jwt.sign(
-    { id: user.id, username: user.username, user_role: user.user_role, is_profile_complete: user.is_profile_complete },
+    {
+      id: user.id,
+      username: user.username,
+      user_role: user.user_role,
+      is_profile_complete: user.is_profile_complete,
+    },
     process.env.SECRET_KEY,
     { expiresIn: "1h" }
   );
@@ -308,15 +313,15 @@ export const getCompleteProfilee = async (user_id) => {
           model: UserPreference,
           include: [
             {
-              model: Topic, // Incluir el nombre del tema
-              attributes: ["topic_name"], // Solo selecciona el nombre del tema
+              model: Topic,
+              attributes: ["topic_name"],
             },
             {
-              model: UserPreferenceTag, // Incluir las etiquetas
+              model: UserPreferenceTag,
               include: [
                 {
                   model: Tag,
-                  attributes: ["tag_name"], // Solo selecciona el nombre de las etiquetas
+                  attributes: ["tag_name"],
                 },
               ],
               attributes: ["tag_id"],
@@ -324,8 +329,35 @@ export const getCompleteProfilee = async (user_id) => {
           ],
           attributes: ["id", "type", "topic_id"],
         },
+        // Seguidores
+        {
+          model: Follower,
+          as: "followers", // Asegúrate de que este alias coincide con el definido en el modelo
+          include: [
+            {
+              model: User,
+              as: "follower", // Alias definido en las asociaciones
+              attributes: ["id", "username", "profile_picture", "gender"],
+            },
+          ],
+          // attributes: [],
+        },
+        // Seguidos
+        {
+          model: Follower,
+          as: "following", // Asegúrate de que este alias coincide con el definido en el modelo
+          include: [
+            {
+              model: User,
+              as: "followed", // Alias definido en las asociaciones
+              attributes: ["id", "username", "profile_picture", "gender"],
+            },
+          ],
+          // attributes: [],}
+        },
       ],
     });
+    
     return user;
   } catch (error) {
     console.log(error);

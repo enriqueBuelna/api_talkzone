@@ -8,10 +8,9 @@ import {
   getRelevantPosts,
   getFriendsPost,
   getPostLike,
-  getPostGroup
+  getPostGroup,
+  getYourPosts
 } from "../controllers/posts.controllers.js";
-import { getYourPost } from "../services/post.services.js";
-
 const router = Router();
 
 router.post("/posts/newPost", createPost);
@@ -20,7 +19,7 @@ router.get("/posts/getRelevantPost/:id", getRelevantPosts);
 router.get("/posts/getPostById", getPostById);
 router.get("/posts/getForYou", getAllPost);
 router.get("/posts/getPostFriends", getFriendsPost);
-router.get("/posts/getYourPost", getYourPost)
+router.get("/posts/getYourPost", getYourPosts)
 router.get("/posts/getLikePost",getPostLike);
 router.get("/posts/getPostGroup", getPostGroup);
 

@@ -121,13 +121,24 @@ export const getVoiceRoomByIdService = async (room_id) => {
   } catch (error) {}
 };
 
-export const getVoiceRooms = async (user_id) => {
+export const getVoiceRooms = async (user_id, filter) => {
   try {
+    console.log(filter);
     //aqui va a ser un cambio
     let topics_ids = await getUserPreferencess(user_id);
     topics_ids = topics_ids.map((item) => item.topic_id);
+    let type = ['mentor','entusiasta','explorador'];
+    
+    if(filter){
+      if(filter.topicsId){
+        topics_ids = filter.topicsId
+      }
+      if(filter.type){
+        type = filter.type;
+      }
+    }
     let rooms = await VoiceRoom.findAll({
-      where: { topic_id: topics_ids, room_status: "active" },
+      where: { topic_id: topics_ids, room_status: "active", type: type },
       include: [
         {
           model: VoiceRoomMember,

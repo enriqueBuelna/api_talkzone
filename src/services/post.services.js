@@ -349,15 +349,13 @@ export const getPostTopicsService = async (id, page = 1, limit = 10) => {
 export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
   try {
     const user_preferences = formatResponse(await getUserPreferencess(user_id));
-    const topicIds = user_preferences.map((pref) => pref.id);
-    console.log(topicIds);
+    console.log(user_preferences);
+    const topicIds = user_preferences.map((pref) => pref.topic_id);
     const offset = (page - 1) * pageSize;
 
     const matchingPost = await Post.findAll({
       where: {
-        user_preference_id: {
-          [Op.in]: topicIds,
-        },
+        
         community_id: null,
         user_id: { [Op.ne]: user_id },
       },
@@ -373,6 +371,9 @@ export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
           include: [
             {
               model: Topic,
+              topic_id: {
+                [Op.in]: topicIds,
+              },
               attributes: ["topic_name"],
             },
           ],
@@ -472,7 +473,6 @@ export const getPostFriends = async (user_id) => {
 export const getYourPost = async (user_id, page = 1, pageSize = 10) => {
   try {
     const offset = (page - 1) * pageSize;
-
     const matchingPost = await Post.findAll({
       where: {
         user_id,
@@ -497,19 +497,28 @@ export const getYourPost = async (user_id, page = 1, pageSize = 10) => {
         {
           model: Like,
           as: "post_liked",
-          required: false, // Hacer que la inclusión sea opcional
-          where: {
-            post_id: postId,
-            user_id,
-          },
+          attributes: ["id", "user_id"], // No uses la cláusula where aquí
+          required: false,
         },
       ],
       limit: pageSize,
       offset: offset,
     });
 
-    return matchingPost;
-  } catch (error) {}
+    const postsWithFilteredLikes = matchingPost.map((post) => {
+      const filteredLikes = post.post_liked.filter(
+        (like) => like.user_id === user_id
+      );
+      return {
+        ...post.toJSON(),
+        post_liked: filteredLikes,
+      };
+    });
+
+    return postsWithFilteredLikes;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const getLikePost = async (user_id, page = 1, pageSize = 10) => {

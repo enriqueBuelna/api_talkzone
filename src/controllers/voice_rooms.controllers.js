@@ -164,8 +164,8 @@ export const deleteVoiceRoom = async (req, res) => {
 
 export const getVoiceRoomsByPreferences = async (req, res) => {
   try {
-    const { user_id } = req.query;
-    const results = await getVoiceRooms(user_id);
+    const { user_id, filter } = req.body;
+    const results = await getVoiceRooms(user_id, filter);
     return res.status(201).json(results);
   } catch (error) {
     console.log(error);

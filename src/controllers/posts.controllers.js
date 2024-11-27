@@ -8,7 +8,8 @@ import {
   getPostAll,
   getPostFriends,
   getLikePost,
-  getGroupPost
+  getGroupPost,
+  getYourPost
 } from "../services/post.services.js";
 
 export const getPostGroup = async (req, res) => {
@@ -126,3 +127,13 @@ export const getPostLike = async (req, res) => {
     res.status(201).json(results);
   } catch (error) {}
 };
+
+export const getYourPosts = async (req, res) => {
+  const {user_id,page} = req.query;
+  try {
+    let resuls = await getYourPost(user_id, page);
+    res.status(201).json(resuls);
+  } catch (error) {
+    console.log(error);
+  }
+}
