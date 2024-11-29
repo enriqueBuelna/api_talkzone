@@ -11,6 +11,7 @@ import { Tag } from "../models/tag.models.js";
 import { sendCodeEmailService } from "./email.services.js";
 import { Follower } from "../models/follower.model.js";
 import Op from "sequelize";
+import { getFollowers, getFollowing } from "./followers.services.js";
 // Servicio para registrar un usuario
 export const registerUserService = async ({
   username,
@@ -330,34 +331,21 @@ export const getCompleteProfilee = async (user_id) => {
           attributes: ["id", "type", "topic_id"],
         },
         // Seguidores
-        {
-          model: Follower,
-          as: "followers", // Asegúrate de que este alias coincide con el definido en el modelo
-          include: [
-            {
-              model: User,
-              as: "follower", // Alias definido en las asociaciones
-              attributes: ["id", "username", "profile_picture", "gender"],
-            },
-          ],
-          // attributes: [],
-        },
-        // Seguidos
-        {
-          model: Follower,
-          as: "following", // Asegúrate de que este alias coincide con el definido en el modelo
-          include: [
-            {
-              model: User,
-              as: "followed", // Alias definido en las asociaciones
-              attributes: ["id", "username", "profile_picture", "gender"],
-            },
-          ],
-          // attributes: [],}
-        },
       ],
     });
-    
+
+    let followers = await getFollowers(user_id);
+    let following = await getFollowing(user_id);
+
+    user.setDataValue(
+      "following",
+      following
+    );
+
+    user.setDataValue(
+      "followers",
+      followers
+    )
     return user;
   } catch (error) {
     console.log(error);

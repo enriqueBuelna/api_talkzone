@@ -41,7 +41,7 @@ export const createVoiceRoomService = async (
       room_name,
       topic_id,
       host_user_id,
-      type
+      type,
     });
     await VoiceRoomMember.create({
       room_id: voice_room.id,
@@ -121,24 +121,101 @@ export const getVoiceRoomByIdService = async (room_id) => {
   } catch (error) {}
 };
 
+// export const getVoiceRooms = async (user_id, filter) => {
+//   try {
+//     let topics_ids = await getUserPreferencess(user_id);
+//     topics_ids = topics_ids.map((item) => item.topic_id);
+//     let type = ["mentor", "entusiasta", "explorador"];
+
+//     if (filter) {
+//       if (filter.topicsId) {
+//         topics_ids = filter.topicsId;
+//       }
+//       if (filter.type) {
+//         type = filter.type;
+//       }
+//     }
+//     let rooms = await VoiceRoom.findAll({
+//       where: { topic_id: topics_ids, room_status: "active", type: type },
+//       include: [
+//         {
+//           model: VoiceRoomMember,
+//           include: [
+//             {
+//               association: "user_information_voice_room",
+//               model: User,
+//               attributes: ["username", "profile_picture", "id"],
+//             },
+//           ],
+//           attributes: ["id"],
+//           where: { left_at: null },
+//         },
+//         {
+//           model: Topic,
+//           attributes: ["topic_name"],
+//         },
+//         {
+//           model: VoiceRoomTag,
+//           include: [
+//             {
+//               association: "voice_room_tag_to_tag",
+//               model: Tag,
+//               attributes: ["tag_name"],
+//             },
+//           ],
+//           attributes: ["tag_id"],
+//         },
+//         {
+//           model: User,
+//           as: "host_user", 
+//           attributes: ["username", "profile_picture", "id"], 
+//           include: [
+//             {
+//               model: UserHostRanking,
+//               attributes: ["average_rating", "total_ratings"],
+//               as: "rating_",
+//             },
+//           ],
+//         },
+//       ],
+//       attributes: ["id", "room_name", "topic_id", "room_status"],
+//     });
+
+//     return rooms;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
 export const getVoiceRooms = async (user_id, filter) => {
   try {
-    console.log(filter);
-    //aqui va a ser un cambio
+    // Obtener los IDs de los temas del usuario
     let topics_ids = await getUserPreferencess(user_id);
     topics_ids = topics_ids.map((item) => item.topic_id);
-    let type = ['mentor','entusiasta','explorador'];
-    
-    if(filter){
-      if(filter.topicsId){
-        topics_ids = filter.topicsId
+    let type = ["mentor", "entusiasta", "explorador"];
+
+    // Aplicar filtros de temas y tipo
+    if (filter) {
+      if (filter.topicsId) {
+        topics_ids = filter.topicsId;
       }
-      if(filter.type){
+      if (filter.type) {
         type = filter.type;
       }
     }
-    let rooms = await VoiceRoom.findAll({
-      where: { topic_id: topics_ids, room_status: "active", type: type },
+
+    // Parámetros de paginación (default page=1, limit=10)
+    const page = filter?.page || 1;
+    const limit = filter?.limit || 10;
+    const offset = (page - 1) * limit;
+
+    // Buscar salas con paginación y orden
+    const rooms = await VoiceRoom.findAll({
+      where: {
+        topic_id: topics_ids,
+        room_status: "active",
+        type: type,
+      },
       include: [
         {
           model: VoiceRoomMember,
@@ -167,26 +244,32 @@ export const getVoiceRooms = async (user_id, filter) => {
           ],
           attributes: ["tag_id"],
         },
-        // Aquí incluyes la relación con el host_user
         {
           model: User,
-          as: "host_user", // Asegúrate de que esto coincida con el alias de tu asociación
-          attributes: ["username", "profile_picture", "id"], // Los atributos que quieres devolver
+          as: "host_user",
+          attributes: ["username", "profile_picture", "id"],
           include: [
             {
               model: UserHostRanking,
-              attributes: ["average_rating"],
+              attributes: ["average_rating", "total_ratings"],
               as: "rating_",
             },
           ],
         },
       ],
       attributes: ["id", "room_name", "topic_id", "room_status"],
+      order: [
+        // Ordenar por relación: host_user -> rating_ -> average_rating
+        [{ model: User, as: "host_user" }, { model: UserHostRanking, as: "rating_" }, "average_rating", "DESC"],
+      ],
+      limit, // Aplicar límite
+      offset, // Aplicar desplazamiento
     });
 
     return rooms;
   } catch (error) {
     console.log(error);
+    throw error; // Lanza el error para que el caller lo maneje si es necesario
   }
 };
 

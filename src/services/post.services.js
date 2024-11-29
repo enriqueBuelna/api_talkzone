@@ -114,7 +114,10 @@ export const createPostService = async (
 // Actualizar una publicación existente
 export const updatePostService = async (
   id,
-  { content, media_url, visibility, topic_id }
+  content,
+  media_url,
+  visibility,
+  topic_id
 ) => {
   try {
     // Buscar la publicación por ID
@@ -128,12 +131,12 @@ export const updatePostService = async (
     post.content = content !== undefined ? content : post.content;
     post.media_url = media_url !== undefined ? media_url : post.media_url;
     post.visibility = visibility !== undefined ? visibility : post.visibility;
-    post.topic_id = topic_id !== undefined ? topic_id : post.topic_id;
+    post.user_preference_id = topic_id !== undefined ? topic_id : post.user_preference_id;
 
     // Guardar los cambios
     await post.save();
 
-    return post; // Retornar la publicación actualizada
+    return true; // Retornar la publicación actualizada
   } catch (error) {
     console.error("Error al actualizar la publicación:", error);
     throw new Error("Error al actualizar la publicación");
@@ -344,8 +347,6 @@ export const getPostTopicsService = async (id, page = 1, limit = 10) => {
   }
 };
 
-
-
 export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
   try {
     const user_preferences = formatResponse(await getUserPreferencess(user_id));
@@ -355,7 +356,6 @@ export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
 
     const matchingPost = await Post.findAll({
       where: {
-        
         community_id: null,
         user_id: { [Op.ne]: user_id },
       },

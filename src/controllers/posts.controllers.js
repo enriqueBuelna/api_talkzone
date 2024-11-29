@@ -9,11 +9,11 @@ import {
   getPostFriends,
   getLikePost,
   getGroupPost,
-  getYourPost
+  getYourPost,
 } from "../services/post.services.js";
 
 export const getPostGroup = async (req, res) => {
-  console.log("HOLA")
+  console.log("HOLA");
   const { community_id, page } = req.query;
   try {
     let results = await getGroupPost(community_id, page);
@@ -24,8 +24,16 @@ export const getPostGroup = async (req, res) => {
 };
 
 export const createPost = async (req, res) => {
-  const { user_id, content, media_url, visibility, user_preference_id, tags, community_id, type_community } =
-    req.body;
+  const {
+    user_id,
+    content,
+    media_url,
+    visibility,
+    user_preference_id,
+    tags,
+    community_id,
+    type_community,
+  } = req.body;
 
   try {
     const newPost = await createPostService(
@@ -56,16 +64,16 @@ export const getPostById = async (req, res) => {
 };
 
 export const updatePost = async (req, res) => {
-  const { id } = req.params; // ID del post que se quiere actualizar
-  const { content, media_url, visibility, topic_id } = req.body;
-
+  const { id, content, media_url, visibility, topic_id } = req.body;
+  console.log(id, content, media_url, visibility, topic_id);
   try {
-    const updatedPost = await updatePostService(id, {
+    const updatedPost = await updatePostService(
+      id,
       content,
       media_url,
       visibility,
-      topic_id,
-    });
+      topic_id
+    );
     return res.status(200).json(updatedPost);
   } catch (error) {
     console.error(error);
@@ -129,11 +137,11 @@ export const getPostLike = async (req, res) => {
 };
 
 export const getYourPosts = async (req, res) => {
-  const {user_id,page} = req.query;
+  const { user_id, page } = req.query;
   try {
     let resuls = await getYourPost(user_id, page);
     res.status(201).json(resuls);
   } catch (error) {
     console.log(error);
   }
-}
+};

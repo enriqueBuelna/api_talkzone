@@ -38,12 +38,24 @@ export const unfollowUser = async (follower_id, followed_id) => {
 
 // Listar a los seguidores de un usuario
 export const getFollowers = async (user_id) => {
-  const followers = await Follower.findAll({
-    where: { followed_id: user_id },
-    include: [{ model: User, as: "follower" }],
-  });
-
-  return followers;
+  try {
+    const following = await Follower.findAll({
+      where: { followed_id: user_id },
+      include: [
+        {
+          model: User,
+          as: "followers", // Asegúrate de que este alias coincida con tu definición de relación
+          attributes: ["id", "username", "profile_picture", "gender"], // Selecciona solo los campos deseados
+        },
+      ],
+    });
+    
+    // Mapear los resultados para obtener solo la información necesaria
+    const usersFollowing = following.map((follow) => follow.followers);
+    return usersFollowing;
+  } catch (error) {
+    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", error);
+  }
 };
 
 export const getActiveFollowing = async (id) => {
@@ -57,11 +69,11 @@ export const getActiveFollowing = async (id) => {
       },
     ],
   });
-  
+
   // Mapear los resultados para obtener solo la información necesaria
   const usersFollowing = following.map((follow) => follow.followed);
   return usersFollowing;
-}
+};
 
 // Listar a los usuarios seguidos por un usuario
 export const getFollowing = async (id) => {
@@ -71,11 +83,11 @@ export const getFollowing = async (id) => {
       {
         model: User,
         as: "followed", // Asegúrate de que este alias coincida con tu definición de relación
-        attributes: ["id", "username", "profile_picture", "is_online"], // Selecciona solo los campos deseados
+        attributes: ["id", "username", "profile_picture", "gender"], // Selecciona solo los campos deseados
       },
     ],
   });
-  
+
   // Mapear los resultados para obtener solo la información necesaria
   const usersFollowing = following.map((follow) => follow.followed);
   return usersFollowing;
@@ -89,7 +101,7 @@ export const getOnlineFollowers = async (userId) => {
       include: [
         {
           model: User, // Incluye el modelo User para obtener información del seguidor
-          as: "followerId", // Relación definida en tu modelo
+          // as: "followerId", // Relación definida en tu modelo
           where: { is_online: "online" }, // Solo seguidores que están en línea
           attributes: ["id", "username", "profile_picture", "is_online"], // Atributos que queremos del usuario
         },
@@ -98,20 +110,37 @@ export const getOnlineFollowers = async (userId) => {
 
     // Si no se encuentran seguidores en línea
     if (!onlineFollowers.length) {
-      throw new Error("No se encontraron seguidores en línea para este usuario.");
+      throw new Error(
+        "No se encontraron seguidores en línea para este usuario."
+      );
     }
 
     // Retorna la lista de seguidores en línea con su información relevante
-    return onlineFollowers.map(follower => ({
+    return onlineFollowers.map((follower) => ({
       follower_id: follower.followerId.id,
       username: follower.followerId.username,
       email: follower.followerId.email,
       profile_picture: follower.followerId.profile_picture,
       is_online: follower.followerId.is_online,
     }));
-
   } catch (error) {
     console.error("Error al obtener los seguidores en línea:", error);
     throw error;
   }
 };
+
+export const deleteFollower = async (user_id, user_follower) => {
+  try {
+    const follower = await Follower.findOne({
+      where: {
+        followed_id: user_id,
+        follower_id: user_follower
+      }
+    })
+
+    await follower.destroy();
+    return true;
+  } catch (error) {
+    console.log(error);
+  }
+}

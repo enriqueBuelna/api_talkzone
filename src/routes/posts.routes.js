@@ -9,7 +9,8 @@ import {
   getFriendsPost,
   getPostLike,
   getPostGroup,
-  getYourPosts
+  getYourPosts,
+  updatePost
 } from "../controllers/posts.controllers.js";
 const router = Router();
 
@@ -22,5 +23,5 @@ router.get("/posts/getPostFriends", getFriendsPost);
 router.get("/posts/getYourPost", getYourPosts)
 router.get("/posts/getLikePost",getPostLike);
 router.get("/posts/getPostGroup", getPostGroup);
-
+router.post("/posts/updatePost", updatePost);
 export default router;

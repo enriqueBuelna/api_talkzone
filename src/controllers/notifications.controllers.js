@@ -30,9 +30,7 @@ export const createNotification = async (req, res) => {
 
     return res.status(201).json(notification);
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Error al crear la notificación", error });
+    console.log(error);
   }
 };
 
@@ -52,10 +50,10 @@ export const getNotifications = async (req, res) => {
         // Incluir otras relaciones si es necesario
         {
           model: Like,
-          
+
           include: [
             {
-              as:'post',
+              as: "post",
               model: Post,
               attributes: ["id"], // Información de la publicación
             },
@@ -63,7 +61,7 @@ export const getNotifications = async (req, res) => {
               model: Comment,
               include: [
                 {
-                  association: 'postss',
+                  association: "postss",
                   model: Post,
                   attributes: ["id"], // Información de la publicación original
                 },
@@ -81,13 +79,14 @@ export const getNotifications = async (req, res) => {
         "related_like_id",
         "related_room_open_id",
         "related_message_id",
+        "follower_id",
       ],
       order: [["created_at", "DESC"]],
     });
 
     return res.status(200).json(notifications);
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 };
 

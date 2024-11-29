@@ -7,7 +7,8 @@ export const createNotification = async (
   related_comment_id,
   related_message_id,
   related_like_id,
-  related_room_open_id
+  related_room_open_id,
+  follower_id
 ) => {
   try {
     const notification = await Notification.create({
@@ -19,7 +20,9 @@ export const createNotification = async (
       related_message_id,
       related_like_id,
       related_room_open_id,
+      follower_id
     });
+    console.log("CHIVON")
   } catch (error) {
     console.log("ERROR", error);
   }

@@ -48,10 +48,11 @@ export const Follower = sequelize.define(
 
 // Definir relaciones
 Follower.belongsTo(User, {
-  as: "follower", // Usuario que sigue a otro usuario
+  as: "followers", // Usuario que sigue a otro usuario
   foreignKeyConstraints: true,
   foreignKey: {
     name: "follower_id",
+    target:"id",
     allowNull: false,
     onDelete: "CASCADE",
   },
@@ -62,13 +63,15 @@ Follower.belongsTo(User, {
   foreignKey: {
     name: "followed_id",
     allowNull: false,
+    target:"id",
+
     onDelete: "CASCADE",
   },
   foreignKeyConstraints: true,
 });
 
-User.hasMany(Follower, { foreignKey: "follower_id", as: "following" });
-User.hasMany(Follower, { foreignKey: "follower_id", as: "followers" });
+// User.hasMany(Follower, { foreignKey: "follower_id", as: "following" });
+// User.hasMany(Follower, { foreignKey: "follower_id", as: "followers" });
 
 
 

@@ -99,6 +99,10 @@ export const Notification = sequelize.define(
       },
       onDelete: "CASCADE",
     },
+    follower_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    }
   },
   {
     tableName: "Notifications", // Nombre de la tabla en la base de datos
