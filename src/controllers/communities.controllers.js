@@ -15,11 +15,17 @@ import {
 } from "../services/community.services.js";
 
 export const editGroup = async (req, res) => {
-  const {group_id, about_communitie, privacy, cover_picture, profile_picture} = req.body;
+  const {
+    group_id,
+    about_communitie,
+    privacy,
+    cover_picture,
+    profile_picture,
+  } = req.body;
   try {
     console.log(group_id, about_communitie);
     const group = await Community.findOne({
-      where: {id:group_id}
+      where: { id: group_id },
     });
 
     group.about_communitie = about_communitie || group.about_communitie;
@@ -31,7 +37,7 @@ export const editGroup = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
-}
+};
 
 export const pendingApplies = async (req, res) => {
   const { group_id } = req.query;
@@ -80,6 +86,7 @@ export const getInGroup = async (req, res) => {
       user_id,
       group_id,
     });
+    await community.update({});
     res.status(201).json(true);
   } catch (error) {
     console.log(error);
@@ -393,8 +400,8 @@ export const wantToGetIn = async (req, res) => {
     });
 
     if (existingRequest) {
-      if(existingRequest.status === 'rejected'){
-        existingRequest.status = 'pending';
+      if (existingRequest.status === "rejected") {
+        existingRequest.status = "pending";
         await existingRequest.save();
         res.status(201).json(true);
       }
@@ -456,4 +463,37 @@ export const getPendingGroups = async (req, res) => {
 
 export const getGroupsNotIn = async (req, res) => {
   const { user_id } = req.query;
+};
+
+export const viewIfOnePending = async (req, res) => {
+  const { user_id, group_id } = req.body;
+  try {
+    const existingRequest = await CommunityJoinRequest.findOne({
+      where: {
+        user_id,
+        group_id,
+      },
+    });
+    if (existingRequest) {
+      res.status(201).json(true);
+    } else {
+      res.status(201).json(false);
+    }
+  } catch (error) {}
+};
+
+export const deleteApply = async (req, res) => {
+  const { user_id, group_id } = req.body;
+  try {
+    const existingRequest = await CommunityJoinRequest.findOne({
+      where: {
+        user_id,
+        group_id,
+      },
+    });
+    await existingRequest.destroy();
+    res.status(201).json(true);
+  } catch (error) {
+    console.log(error);
+  }
 };

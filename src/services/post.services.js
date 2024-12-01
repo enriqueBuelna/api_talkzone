@@ -13,9 +13,11 @@ import { Comment } from "../models/comment.model.js";
 import { getUserPreferencess } from "./users.services.js";
 import { Like } from "../models/like.model.js";
 import { json, Op } from "sequelize";
+import { Community } from "../models/communitie.model.js";
 // Crear una nueva publicación
-export const getGroupPost = async (community_id, page, pageSize = 10) => {
+export const getGroupPost = async (community_id, page, user_id) => {
   try {
+    let pageSize = 10;
     const offset = (page - 1) * pageSize;
     const matchingPost = await Post.findAll({
       where: {
@@ -38,11 +40,27 @@ export const getGroupPost = async (community_id, page, pageSize = 10) => {
           ],
           attributes: ["topic_id", "type"],
         },
+        {
+          model: Like,
+          as: "post_liked",
+          attributes: ["id", "user_id"], // No uses la cláusula where aquí
+          required: false,
+        },
       ],
       limit: pageSize,
       offset: offset,
     });
-    return matchingPost;
+    const postsWithFilteredLikes = matchingPost.map((post) => {
+      const filteredLikes = post.post_liked.filter(
+        (like) => like.user_id === user_id
+      );
+      return {
+        ...post.toJSON(),
+        post_liked: filteredLikes,
+      };
+    });
+
+    return postsWithFilteredLikes;
   } catch (error) {
     console.log(error);
   }
@@ -131,7 +149,38 @@ export const updatePostService = async (
     post.content = content !== undefined ? content : post.content;
     post.media_url = media_url !== undefined ? media_url : post.media_url;
     post.visibility = visibility !== undefined ? visibility : post.visibility;
-    post.user_preference_id = topic_id !== undefined ? topic_id : post.user_preference_id;
+    post.user_preference_id =
+      topic_id !== undefined ? topic_id : post.user_preference_id;
+
+    // Guardar los cambios
+    await post.save();
+
+    return true; // Retornar la publicación actualizada
+  } catch (error) {
+    console.error("Error al actualizar la publicación:", error);
+    throw new Error("Error al actualizar la publicación");
+  }
+};
+
+export const updatePostGroupService = async (
+  id,
+  content,
+  media_url,
+  visibility
+) => {
+  console.log(visibility);
+  try {
+    const post = await Post.findByPk(id);
+
+    if (!post) {
+      throw new Error("Publicación no encontrada");
+    }
+
+    // Actualizar los campos de la publicación
+    post.content = content !== undefined ? content : post.content;
+    post.media_url = media_url !== undefined ? media_url : post.media_url;
+    post.type_community =
+      visibility !== undefined ? visibility : post.type_community;
 
     // Guardar los cambios
     await post.save();
@@ -188,9 +237,43 @@ export const getPostByIdService = async (postId, user_id) => {
         },
       ],
     });
+    let communityNames, communityMap;
+    let aux = false;
+    if (matchingPost.community_id) {
+      aux = true;
+      communityNames = await Community.findAll({
+        where: { id: matchingPost.community_id },
+        attributes: ["id", "communitie_name", "profile_picture"],
+      });
+      communityMap = communityNames.reduce((acc, community) => {
+        acc[community.id] = {
+          communitie_name: community.communitie_name,
+          profile_picture: community.profile_picture,
+        };
+        return acc;
+      }, {});
+    }
 
     if (!matchingPost) {
       throw Error("No se encontro post");
+    }
+
+    if(aux){
+      const processedPost = {
+        ...matchingPost.toJSON(),
+        community_name: communityMap[matchingPost.community_id],
+        profile_picture: communityMap[matchingPost.profile_picture],
+      };
+      
+      return processedPost;
+    }else {
+      const processedPost = {
+        ...matchingPost.toJSON(),
+        community_name: '',
+        profile_picture: '',
+      };
+      
+      return processedPost;
     }
 
     return matchingPost;
@@ -350,8 +433,8 @@ export const getPostTopicsService = async (id, page = 1, limit = 10) => {
 export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
   try {
     const user_preferences = formatResponse(await getUserPreferencess(user_id));
-    console.log(user_preferences);
     const topicIds = user_preferences.map((pref) => pref.topic_id);
+    console.log(topicIds);
     const offset = (page - 1) * pageSize;
 
     const matchingPost = await Post.findAll({
@@ -368,11 +451,15 @@ export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
         {
           model: UserPreference,
           as: "post_user_preference",
+          required: true, // Asegura que las publicaciones solo se incluyan si tienen preferencias relacionadas
           include: [
             {
               model: Topic,
-              topic_id: {
-                [Op.in]: topicIds,
+              as: "topic", // Asegúrate de que el alias coincida con tu asociación
+              where: {
+                id: {
+                  [Op.in]: topicIds, // Filtra solo los temas que coinciden
+                },
               },
               attributes: ["topic_name"],
             },
@@ -382,7 +469,7 @@ export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
         {
           model: Like,
           as: "post_liked",
-          attributes: ["id", "user_id"], // No uses la cláusula where aquí
+          attributes: ["id", "user_id"],
           required: false,
         },
       ],
@@ -420,6 +507,7 @@ function formatResponse(data) {
 
 export const getPostFriends = async (user_id) => {
   try {
+    console.log("CHIVIN")
     let usuarios = await getFollowing(user_id);
     let usuariosId = usuarios.map((el) => el.id);
     const matchingPost = await Post.findAll({
@@ -463,15 +551,22 @@ export const getPostFriends = async (user_id) => {
         post_liked: filteredLikes,
       };
     });
-
+  
     return postsWithFilteredLikes;
   } catch (error) {
     console.log(error);
   }
 };
 
-export const getYourPost = async (user_id, page = 1, pageSize = 10) => {
+export const getYourPost = async (user_id, page = 1, other_user_id) => {
   try {
+    let auxUserId = "";
+    if (user_id === other_user_id) {
+      auxUserId = user_id;
+    } else {
+      auxUserId = other_user_id;
+    }
+    let pageSize = 10;
     const offset = (page - 1) * pageSize;
     const matchingPost = await Post.findAll({
       where: {
@@ -507,7 +602,7 @@ export const getYourPost = async (user_id, page = 1, pageSize = 10) => {
 
     const postsWithFilteredLikes = matchingPost.map((post) => {
       const filteredLikes = post.post_liked.filter(
-        (like) => like.user_id === user_id
+        (like) => like.user_id === other_user_id
       );
       return {
         ...post.toJSON(),

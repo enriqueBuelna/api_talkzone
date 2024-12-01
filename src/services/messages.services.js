@@ -15,16 +15,18 @@ export const readMessages = async (user_id, user_id_2) => {
       },
     });
 
-    await Message.update(
-      { is_read: true }, // Valores a actualizar
-      {
-        where: {
-          conversation_id: chat.id,
-          sender_id: user_id_2,
-          is_read: false,
-        },
-      }
-    );
+    if (chat) {
+      await Message.update(
+        { is_read: true }, // Valores a actualizar
+        {
+          where: {
+            conversation_id: chat.id,
+            sender_id: user_id_2,
+            is_read: false,
+          },
+        }
+      );
+    }
   } catch (error) {
     console.log(error);
   }
@@ -101,7 +103,6 @@ export const createMessage = async (
     userBasicInfo2 = await getBasicInfoo(sender_id);
     userBasicInfo = await getBasicInfoo(receiver_id);
   }
-  console.log(userBasicInfo);
   return [newMessage, chat, userBasicInfo, userBasicInfo2];
 };
 

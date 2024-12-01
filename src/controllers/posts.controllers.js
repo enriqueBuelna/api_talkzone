@@ -10,13 +10,23 @@ import {
   getLikePost,
   getGroupPost,
   getYourPost,
+  updatePostGroupService
 } from "../services/post.services.js";
 
-export const getPostGroup = async (req, res) => {
-  console.log("HOLA");
-  const { community_id, page } = req.query;
+export const updatePostGroup = async (req, res) => {
+  const { id, content, media_url, visibility} = req.body;
   try {
-    let results = await getGroupPost(community_id, page);
+    let results = await updatePostGroupService(id, content, media_url, visibility);
+    res.status(201).json(true);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const getPostGroup = async (req, res) => {
+  const { community_id, page, user_id } = req.query;
+  try {
+    let results = await getGroupPost(community_id, page, user_id);
     res.status(201).json(results);
   } catch (error) {
     console.log(error);
@@ -65,7 +75,6 @@ export const getPostById = async (req, res) => {
 
 export const updatePost = async (req, res) => {
   const { id, content, media_url, visibility, topic_id } = req.body;
-  console.log(id, content, media_url, visibility, topic_id);
   try {
     const updatedPost = await updatePostService(
       id,
@@ -137,9 +146,9 @@ export const getPostLike = async (req, res) => {
 };
 
 export const getYourPosts = async (req, res) => {
-  const { user_id, page } = req.query;
+  const { user_id, page, other_user_id } = req.query;
   try {
-    let resuls = await getYourPost(user_id, page);
+    let resuls = await getYourPost(user_id, page, other_user_id);
     res.status(201).json(resuls);
   } catch (error) {
     console.log(error);

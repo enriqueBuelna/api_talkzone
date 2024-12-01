@@ -44,17 +44,25 @@ export const messagesSocket = async (socket, io) => {
     try {
       const { sender_id, receiver_id, content, media_url } = message;
   
-      // Crea el mensaje en la base de datos o donde corresponda
+      // Guarda el mensaje en la base de datos
       const newMessage = await createMessage(sender_id, receiver_id, content, media_url);
   
-      // Obtén los socket IDs de los usuarios remitente y destinatario
-      const senderSocketId = users[sender_id] ? users[sender_id][0] : null;
-      const receiverSocketId = users[receiver_id] ? users[receiver_id][0] : null;
+      // Obtén los socket IDs activos
+      const senderSocketIds = users[sender_id] || [];
+      const receiverSocketIds = users[receiver_id] || [];
   
-      // Emitir el mensaje al remitente y destinatario si están conectados
-      if (senderSocketId) io.to(senderSocketId).emit("chatMessage", newMessage);
-      if (receiverSocketId && receiverSocketId !== senderSocketId) {
-        io.to(receiverSocketId).emit("chatMessage", newMessage);
+      // Emitir mensaje al remitente
+      if (senderSocketIds.length > 0) {
+        senderSocketIds.forEach((socketId) => {
+          io.to(socketId).emit("chatMessage", newMessage);
+        });
+      }
+  
+      // Emitir mensaje al receptor si es diferente del remitente
+      if (receiverSocketIds.length > 0 && sender_id !== receiver_id) {
+        receiverSocketIds.forEach((socketId) => {
+          io.to(socketId).emit("chatMessage", newMessage);
+        });
       }
     } catch (error) {
       console.error("Error al enviar mensaje:", error);
