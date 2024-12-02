@@ -142,7 +142,9 @@ export const getPostLike = async (req, res) => {
   try {
     let results = await getLikePost(user_id, page);
     res.status(201).json(results);
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const getYourPosts = async (req, res) => {

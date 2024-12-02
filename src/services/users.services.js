@@ -215,8 +215,9 @@ export const getBasicInfoo = async (user_id) => {
 
 export const getUserPreferencess = async (userId) => {
   try {
+    console.log("USO ESTA CHIVIN")
     const userPreferences = await UserPreference.findAll({
-      where: { user_id: userId },
+      where: { user_id: userId, is_active: true },
       include: [
         {
           model: Topic, // Incluir el nombre del tema
@@ -237,7 +238,7 @@ export const getUserPreferencess = async (userId) => {
     });
 
     if (userPreferences.length === 0) {
-      return null;
+      return [];
     }
     return userPreferences;
   } catch (error) {
@@ -312,6 +313,7 @@ export const getCompleteProfilee = async (user_id) => {
       include: [
         {
           model: UserPreference,
+          where: { is_active: true },
           include: [
             {
               model: Topic,
@@ -329,6 +331,7 @@ export const getCompleteProfilee = async (user_id) => {
             },
           ],
           attributes: ["id", "type", "topic_id"],
+          required: false,
         },
         // Seguidores
       ],
@@ -337,15 +340,9 @@ export const getCompleteProfilee = async (user_id) => {
     let followers = await getFollowers(user_id);
     let following = await getFollowing(user_id);
 
-    user.setDataValue(
-      "following",
-      following
-    );
+    user.setDataValue("following", following);
 
-    user.setDataValue(
-      "followers",
-      followers
-    )
+    user.setDataValue("followers", followers);
     return user;
   } catch (error) {
     console.log(error);

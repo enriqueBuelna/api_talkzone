@@ -4,6 +4,7 @@ import { UserPreference } from "../models/user_preferences.model.js";
 import { createUserPreferenceTag } from "./user_preferences_tag.services.js";
 import { Tag } from "../models/tag.models.js";
 import { UserPreferenceTag } from "../models/user_preference_tag.model.js";
+import { where } from "sequelize";
 
 // Servicio para crear una preferencia de usuario
 export const createUserPreference = async (user_id, topic_id, type, tagss) => {
@@ -18,7 +19,24 @@ export const createUserPreference = async (user_id, topic_id, type, tagss) => {
   });
 
   if (existingPreference) {
-    throw new Error("La preferencia ya existe para este usuario y tema.");
+    if (!existingPreference.is_active) {
+      await existingPreference.update({
+        is_active: true,
+      });
+
+      const tagPromises = tagss.map((el) =>
+        createUserPreferenceTag(existingPreference.id, el.id)
+      );
+      const tag = await Promise.all(tagPromises);
+      const valueReturn = {
+        id: existingPreference.id,
+        topic_name: topic.topic_name,
+        topic_id,
+        type: existingPreference.type,
+        tags: tag,
+      };
+      return valueReturn;
+    }
   }
 
   if (!user || !topic) {
@@ -47,32 +65,37 @@ export const createUserPreference = async (user_id, topic_id, type, tagss) => {
 
 // Servicio para obtener las preferencias de un usuario
 export const getUserPreferences = async (user_id) => {
-  const preferences = await UserPreference.findAll({
-    where: { user_id },
-    include: [
-      {
-        model: Topic,
-        attributes: ["id", "topic_name"],
-      },
-      {
-        model: UserPreferenceTag,
-        include: [
-          {
-            model: Tag,
-            attributes: ["tag_name"],
-          },
-        ],
-        attributes: ["id"],
-      },
-    ], // Incluir el tema asociado
-    attributes: ["id", "type"],
-  });
+  try {
+    const preferences = await UserPreference.findAll({
+      where: { user_id, is_active: true },
+      include: [
+        {
+          model: Topic,
+          attributes: ["id", "topic_name"],
+        },
+        {
+          model: UserPreferenceTag,
+          include: [
+            {
+              model: Tag,
+              attributes: ["tag_name"],
+            },
+          ],
+          attributes: ["id"],
+        },
+      ], // Incluir el tema asociado
+      attributes: ["id", "type"],
+    });
 
-  if (!preferences.length) {
-    throw new Error("No se encontraron preferencias para este usuario");
+    if (!preferences.length) {
+      console.log("uwu")
+      return []
+    }
+
+    return preferences;
+  } catch (error) {
+    console.log(error);
   }
-
-  return preferences;
 };
 
 // Servicio para actualizar una preferencia de usuario
@@ -91,11 +114,35 @@ export const updateUserPreference = async (id, type) => {
 
 // Servicio para eliminar una preferencia de usuario
 export const deleteUserPreference = async (id) => {
-  const preference = await UserPreference.findByPk(id);
+  try {
+    const preference = await UserPreference.findByPk(id);
 
-  if (!preference) {
-    throw new Error("Preferencia no encontrada");
+    if (!preference) {
+      throw new Error("Preferencia no encontrada");
+    }
+
+    await preference.update({
+      is_active: false,
+    });
+
+    const tagsToDelete = await UserPreferenceTag.findAll({
+      where: {
+        user_preference_id: preference.id,
+      },
+    });
+
+    // Filtrar los tags que realmente existen
+    const tagIdsToDelete = tagsToDelete.map((record) => record.tag_id);
+
+    // Eliminar los tags existentes
+    if (tagIdsToDelete.length > 0) {
+      await UserPreferenceTag.destroy({
+        where: {
+          user_preference_id: preference.id,
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
   }
-
-  await preference.destroy();
 };

@@ -59,6 +59,7 @@ const calculateCompatibility = async (user_id) => {
           { user_id: { [Op.ne]: user_id } }, // Diferente al usuario actual
           { user_id: { [Op.notIn]: followedId } }, // No esté en el arreglo de seguidos
         ],
+        is_active:true
       },
 
       group: ["user_id"],

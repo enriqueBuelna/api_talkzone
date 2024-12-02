@@ -1,3 +1,4 @@
+import { Follower } from "../models/follower.model.js";
 import { User } from "../models/user.model.js";
 import {
   registerUserService,
@@ -12,6 +13,25 @@ import {
   getCompleteProfilee,
   editProfilee
 } from "../services/users.services.js";
+
+export const amFollowing = async (req, res) => {
+  const {user_id, other_user_id} = req.body;
+  try {
+    let following = await Follower.findOne({
+      where: {
+        followed_id:other_user_id,
+        follower_id:user_id
+      }
+    })
+
+    if(following){
+      res.status(201).json(true);
+    }
+    res.status(201).json(false);
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 export const registerUser = async (req, res) => {
   try {

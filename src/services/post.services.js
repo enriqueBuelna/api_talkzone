@@ -434,7 +434,6 @@ export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
   try {
     const user_preferences = formatResponse(await getUserPreferencess(user_id));
     const topicIds = user_preferences.map((pref) => pref.topic_id);
-    console.log(topicIds);
     const offset = (page - 1) * pageSize;
 
     const matchingPost = await Post.findAll({
@@ -507,7 +506,6 @@ function formatResponse(data) {
 
 export const getPostFriends = async (user_id) => {
   try {
-    console.log("CHIVIN")
     let usuarios = await getFollowing(user_id);
     let usuariosId = usuarios.map((el) => el.id);
     const matchingPost = await Post.findAll({
@@ -627,11 +625,13 @@ export const getLikePost = async (user_id, page = 1, pageSize = 10) => {
       raw: true, // Devuelve datos puros sin instancias de Sequelize
     });
     const postIds = likedPosts.map((like) => like.post_id);
+    console.log(postIds);
     const offset = (page - 1) * pageSize;
 
     const matchingPost = await Post.findAll({
       where: {
         id: postIds,
+        user_id: { [Op.ne]: user_id },
       },
       include: [
         {
@@ -650,11 +650,28 @@ export const getLikePost = async (user_id, page = 1, pageSize = 10) => {
           ],
           attributes: ["topic_id", "type"],
         },
+        {
+          model: Like,
+          as: "post_liked",
+          attributes: ["id", "user_id"], // No uses la cláusula where aquí
+          required: false,
+        },
       ],
       limit: pageSize,
       offset: offset,
     });
+    const postsWithFilteredLikes = matchingPost.map((post) => {
+      const filteredLikes = post.post_liked.filter(
+        (like) => like.user_id === user_id
+      );
+      return {
+        ...post.toJSON(),
+        post_liked: filteredLikes,
+      };
+    });
 
-    return matchingPost;
-  } catch (error) {}
+    return postsWithFilteredLikes;
+  } catch (error) {
+    console.log(error);
+  }
 };

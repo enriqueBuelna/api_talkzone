@@ -44,6 +44,11 @@ export const UserPreference = sequelize.define(
       },
       onDelete: "CASCADE",
     },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+    }
   },
   {
     tableName: "User_preferences",

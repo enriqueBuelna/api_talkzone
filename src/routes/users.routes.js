@@ -11,7 +11,8 @@ import {
   getBasicInfo,
   getCompleteProfile,
   editProfile,
-  completeProfile
+  completeProfile,
+  amFollowing
 } from "../controllers/users.controllers.js";
 import {
   authenticateToken,
@@ -43,5 +44,5 @@ router.get("/users/getFollowersFollowed", getFollowersFollowed);
 router.get("/users/getBasicInfo", getBasicInfo);
 router.get("/users/getCompleteProfile", getCompleteProfile);
 router.post("/users/editProfile", editProfile);
-
+router.post("/users/amFollowing", amFollowing);
 export default router;
