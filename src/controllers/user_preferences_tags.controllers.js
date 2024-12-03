@@ -1,10 +1,71 @@
 import { UserPreferenceTag } from "../models/user_preference_tag.model.js";
 import { UserPreference } from "../models/user_preferences.model.js";
 import { Tag } from "../models/tag.models.js";
+import {CommunityTags} from "../models/community_tag.model.js";
+
+export const createTagsGroup = async (req, res) => {
+  const {group_id, tag, tagsEliminated} = req.body;
+  console.log(group_id, tag, tagsEliminated);
+  try {
+    // Mapear los ids desde el arreglo de tags
+    const tagsId = tag.map((el) => el.id);
+
+    const existingTags = await CommunityTags.findAll({
+      where: {
+        group_id,
+        tag_id: tagsId,
+      },
+    });
+
+    // Filtrar los ids que ya existen
+    const existingTagIds = existingTags.map((record) => record.tag_id);
+    const newTagIds = tagsId.filter((tagId) => !existingTagIds.includes(tagId));
+
+    // Crear el arreglo para la inserción masiva
+    const userPreferenceTags = newTagIds.map((tagId) => ({
+      group_id,
+      tag_id: tagId,
+    }));
+
+    // Insertar solo los registros nuevos
+    if (userPreferenceTags.length > 0) {
+      await CommunityTags.bulkCreate(userPreferenceTags);
+    }
+
+    // Manejar la eliminación de tags
+    if (tagsEliminated && tagsEliminated.length > 0) {
+      // Verificar si los tags a eliminar existen
+      const tagsToDelete = await CommunityTags.findAll({
+        where: {
+          group_id,
+          tag_id: tagsEliminated,
+        },
+      });
+
+      // Filtrar los tags que realmente existen
+      const tagIdsToDelete = tagsToDelete.map((record) => record.tag_id);
+
+      // Eliminar los tags existentes
+      if (tagIdsToDelete.length > 0) {
+        await CommunityTags.destroy({
+          where: {
+            group_id,
+            tag_id: tagIdsToDelete,
+          },
+        });
+      }
+    }
+
+    // Responder al cliente con éxito
+    res.status(201).json({ message: "Operación completada exitosamente" });
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 export const createTags = async (req, res) => {
   const { user_preference_id, tag, tagsEliminated } = req.body;
-
+  console.log(user_preference_id, tag, tagsEliminated);
   try {
     // Mapear los ids desde el arreglo de tags
     const tagsId = tag.map((el) => el.id);

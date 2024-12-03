@@ -13,6 +13,8 @@ import {
   getGroupsFollowed,
   getPostsByGroup,
 } from "../services/community.services.js";
+import { CommunityTags } from "../models/community_tag.model.js";
+import { Tag } from "../models/tag.models.js";
 
 export const editGroup = async (req, res) => {
   const {
@@ -384,13 +386,25 @@ export const getGroupInformationById = async (req, res) => {
         },
         {
           model: UserPreference,
-          include: [{ model: Topic, attributes: ["topic_name"] }],
+          include: [{ model: Topic, attributes: ["topic_name","id"] }],
+        },
+        {
+          model: CommunityTags,
+          where: { group_id: id },
+          include: [
+            {
+              model: Tag,
+              attributes: ["tag_name", "id", "topic_id"],
+            },
+          ],
+          required:false
         },
       ],
     });
     res.status(201).json(community);
   } catch (error) {
-    res.status(404).json('');
+    console.log(error);
+    res.status(404).json(error);
   }
 };
 
@@ -414,7 +428,10 @@ export const wantToGetIn = async (req, res) => {
     });
 
     if (existingRequest) {
-      if (existingRequest.status === "rejected" || existingRequest.status === 'approved') {
+      if (
+        existingRequest.status === "rejected" ||
+        existingRequest.status === "approved"
+      ) {
         existingRequest.status = "pending";
         await existingRequest.save();
         res.status(201).json(true);
@@ -488,7 +505,7 @@ export const viewIfOnePending = async (req, res) => {
         group_id,
       },
     });
-    if (existingRequest.status === 'pending') {
+    if (existingRequest.status === "pending") {
       res.status(201).json(true);
     } else {
       res.status(201).json(false);

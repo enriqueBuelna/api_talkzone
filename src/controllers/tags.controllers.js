@@ -1,5 +1,6 @@
 import { Topic } from "../models/topic.models.js";
 import { Tag } from "../models/tag.models.js";
+import { CommunityTags } from "../models/community_tag.model.js";
 
 export const addTag = async (req, res) => {
   const { tag_name, topic_id } = req.body;
@@ -50,3 +51,24 @@ export const getAllTag = async (req, res) => {
     res.status(200).json(allTag); // Código 200 para éxito
   } catch (error) {}
 };
+
+export const addTagGroup = async (req, res) => {
+  try {
+    const {group_id,tag_id} = req.query;
+    const oneTag = await CommunityTags.create({
+      group_id,
+      tag_id
+    })
+
+    let newTag = await Tag.findByPk(tag_id);
+
+    const returnValue = {
+      id: newTag.id,
+      tag_name: newTag.tag_name,
+      topic_id: newTag.topic_id
+    };
+    res.status(201).json(returnValue);
+  } catch (error) {
+    console.log(error);
+  }
+}

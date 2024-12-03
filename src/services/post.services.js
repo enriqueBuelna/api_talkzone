@@ -19,6 +19,7 @@ export const getGroupPost = async (community_id, page, user_id) => {
   try {
     let pageSize = 10;
     const offset = (page - 1) * pageSize;
+    // Obtener todas las publicaciones que coinciden con community_id
     const matchingPost = await Post.findAll({
       where: {
         community_id,
@@ -43,20 +44,51 @@ export const getGroupPost = async (community_id, page, user_id) => {
         {
           model: Like,
           as: "post_liked",
-          attributes: ["id", "user_id"], // No uses la cláusula where aquí
+          attributes: ["id", "user_id"],
           required: false,
         },
       ],
       limit: pageSize,
       offset: offset,
     });
+
+    // Obtener los IDs únicos de las comunidades asociadas
+    const communityIds = [
+      ...new Set(matchingPost.map((post) => post.community_id)),
+    ];
+
+    // Consultar los datos de las comunidades relevantes
+    let communityMap = {};
+    if (communityIds.length > 0) {
+      const communityNames = await Community.findAll({
+        where: { id: communityIds },
+        attributes: ["id", "communitie_name", "profile_picture"],
+      });
+
+      // Convertir la lista de comunidades en un mapa
+      communityMap = communityNames.reduce((acc, community) => {
+        acc[community.id] = {
+          communitie_name: community.communitie_name,
+          profile_picture: community.profile_picture,
+        };
+        return acc;
+      }, {});
+    }
+
+    // Procesar las publicaciones para incluir información filtrada
     const postsWithFilteredLikes = matchingPost.map((post) => {
+      // Filtrar likes por user_id
       const filteredLikes = post.post_liked.filter(
         (like) => like.user_id === user_id
       );
+
+      // Obtener datos de la comunidad
+      const communityInfo = communityMap[post.community_id] || null;
+
       return {
         ...post.toJSON(),
         post_liked: filteredLikes,
+        community: communityInfo, // Información de la comunidad (si aplica)
       };
     });
 
@@ -258,21 +290,21 @@ export const getPostByIdService = async (postId, user_id) => {
       throw Error("No se encontro post");
     }
 
-    if(aux){
+    if (aux) {
       const processedPost = {
         ...matchingPost.toJSON(),
         community_name: communityMap[matchingPost.community_id],
         profile_picture: communityMap[matchingPost.profile_picture],
       };
-      
+
       return processedPost;
-    }else {
+    } else {
       const processedPost = {
         ...matchingPost.toJSON(),
-        community_name: '',
-        profile_picture: '',
+        community_name: "",
+        profile_picture: "",
       };
-      
+
       return processedPost;
     }
 
@@ -549,7 +581,7 @@ export const getPostFriends = async (user_id) => {
         post_liked: filteredLikes,
       };
     });
-  
+
     return postsWithFilteredLikes;
   } catch (error) {
     console.log(error);

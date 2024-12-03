@@ -4,7 +4,8 @@ import {
   getUserPreferenceTags,
   updateUserPreferenceTag,
   deleteUserPreferenceTag,
-  createTags
+  createTags,
+  createTagsGroup
 } from "../controllers/user_preferences_tags.controllers.js"; // Asegúrate de que la ruta sea correcta
 
 const router = Router();
@@ -22,5 +23,6 @@ router.put("/preferencesTag/:id", updateUserPreferenceTag);
 router.delete("/preferencesTag/:id", deleteUserPreferenceTag);
 
 router.post("/preferencesTags/createTags", createTags);
+router.post("/preferencesGroups/createTags", createTagsGroup);
 
 export default router;
