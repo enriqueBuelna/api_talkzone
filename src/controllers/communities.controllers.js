@@ -93,6 +93,20 @@ export const getInGroup = async (req, res) => {
   }
 };
 
+export const getOutGroup = async (req, res) => {
+  const { user_id, group_id } = req.body;
+  try {
+    const community = await CommunityMember.findOne({
+      where: { group_id, user_id },
+    });
+
+    await community.destroy();
+    res.status(201).json(true);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const responseApply = async (req, res) => {
   const { status, group_id, user_id } = req.body;
   console.log(status, group_id, user_id);
@@ -376,7 +390,7 @@ export const getGroupInformationById = async (req, res) => {
     });
     res.status(201).json(community);
   } catch (error) {
-    console.log(error);
+    res.status(404).json('');
   }
 };
 
@@ -400,7 +414,7 @@ export const wantToGetIn = async (req, res) => {
     });
 
     if (existingRequest) {
-      if (existingRequest.status === "rejected") {
+      if (existingRequest.status === "rejected" || existingRequest.status === 'approved') {
         existingRequest.status = "pending";
         await existingRequest.save();
         res.status(201).json(true);
@@ -474,7 +488,7 @@ export const viewIfOnePending = async (req, res) => {
         group_id,
       },
     });
-    if (existingRequest) {
+    if (existingRequest.status === 'pending') {
       res.status(201).json(true);
     } else {
       res.status(201).json(false);

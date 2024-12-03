@@ -10,7 +10,7 @@ import {
 } from "../services/voice_room.service.js";
 // Controlador para crear una sala de voz
 export const createVoiceRoom = async (req, res) => {
-  const { room_name, host_user_id, topic_id, type,tags } = req.body;
+  const { room_name, host_user_id, topic_id, type, tags } = req.body;
 
   try {
     // Validar que se han proporcionado los campos requeridos
@@ -18,7 +18,8 @@ export const createVoiceRoom = async (req, res) => {
       room_name,
       topic_id,
       host_user_id,
-      tags,type
+      tags,
+      type
     );
 
     return res.status(201).json(newVoiceRoom);
@@ -40,18 +41,21 @@ export const verifyStatus = async (req, res) => {
   const { room_id, user_id } = req.query;
   try {
     const result = await verifyStatuss(room_id);
-    let aux = result.room_status === "closed" ? 'closed' : 'open';
-    const result2 = await BlockedRoomUser.findOne({
-      where: {
-        room_id,
-        user_id,
-      },
-    });
+    if (result) {
+      let aux = result.room_status === "closed" ? "closed" : "open";
+      const result2 = await BlockedRoomUser.findOne({
+        where: {
+          room_id,
+          user_id,
+        },
+      });
 
-    if (result2) {
-      aux = 'deleted';
+      if (result2) {
+        aux = "deleted";
+      }
+      return res.status(201).json(aux);
     }
-    return res.status(201).json(aux);
+    return res.status(404).json("chivo");
   } catch (error) {
     console.log(error);
   }
