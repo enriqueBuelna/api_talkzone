@@ -11,7 +11,8 @@ import {
   getPostGroup,
   getYourPosts,
   updatePost,
-  updatePostGroup
+  updatePostGroup,
+  searchPost
 } from "../controllers/posts.controllers.js";
 const router = Router();
 
@@ -25,5 +26,6 @@ router.get("/posts/getYourPost", getYourPosts);
 router.get("/posts/getLikePost",getPostLike);
 router.get("/posts/getPostGroup", getPostGroup);
 router.post("/posts/updatePost", updatePost);
-router.post("/posts/updatePostGroup", updatePostGroup)
+router.post("/posts/updatePostGroup", updatePostGroup);
+router.get("/posts/searchPost", searchPost);
 export default router;

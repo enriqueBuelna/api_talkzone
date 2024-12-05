@@ -16,6 +16,58 @@ import {
 import { CommunityTags } from "../models/community_tag.model.js";
 import { Tag } from "../models/tag.models.js";
 
+// Controlador del endpoint
+export const searchGroup = async (req, res) => {
+  const { group_name } = req.query; // Query de búsqueda
+  if (!group_name) {
+    return res
+      .status(400)
+      .json({ message: "Debes proporcionar una consulta de búsqueda." });
+  }
+
+  try {
+    // Búsqueda de comunidades
+    const communities = await Community.findAll({
+      where: {
+        [Op.or]: [
+          { communitie_name: { [Op.like]: `%${group_name}%` } }, // Nombre similar
+          { about_communitie: { [Op.like]: `%${group_name}%` } }, // Descripción similar
+        ],
+      },
+      include: [
+        {
+          model: CommunityTags,
+          as: "com_tag_id",
+          include: [
+            {
+              as:"tag",
+              model: Tag,
+              where: {
+                tag_name: { [Op.like]: `%${group_name}%` }, // Etiquetas similares
+              },
+              required: false,
+            },
+          ],
+          required: false,
+        },
+        {
+          model: UserPreference,
+          include: [
+            {
+              model: Topic,
+              attributes: ["topic_name"],
+            },
+          ],
+        },
+      ],
+    });
+
+    res.status(200).json( communities );
+  } catch (error) {
+    console.error("Error al buscar comunidades:", error);
+    res.status(500).json({ message: "Error al buscar comunidades." });
+  }
+};
 export const editGroup = async (req, res) => {
   const {
     group_id,
@@ -386,7 +438,7 @@ export const getGroupInformationById = async (req, res) => {
         },
         {
           model: UserPreference,
-          include: [{ model: Topic, attributes: ["topic_name","id"] }],
+          include: [{ model: Topic, attributes: ["topic_name", "id"] }],
         },
         {
           model: CommunityTags,
@@ -397,7 +449,7 @@ export const getGroupInformationById = async (req, res) => {
               attributes: ["tag_name", "id", "topic_id"],
             },
           ],
-          required:false
+          required: false,
         },
       ],
     });

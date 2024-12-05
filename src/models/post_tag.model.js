@@ -23,7 +23,7 @@ export const PostTag = sequelize.define(
         key: "id",
       },
       onDelete: "CASCADE",
-    }
+    },
   },
   {
     tableName: "PostTags", // Nombre de la tabla en la base de datos
@@ -33,21 +33,41 @@ export const PostTag = sequelize.define(
 
 // Definir las relaciones
 PostTag.belongsTo(Post, {
+  as:"ass-ketchup",
   foreignKey: {
-    name:"post_id",
-    target:"id",
-    allowNull:false,
-    onDelete:"CASCADE"
+    name: "post_id",
+    target: "id",
+    allowNull: false,
+    onDelete: "CASCADE",
   },
   foreignKeyConstraints: true,
 });
 
 PostTag.belongsTo(Tag, {
+  as:"post_tag_tag",
   foreignKey: {
-    name:"tag_id",
-    target:"id",
-    allowNull:false,
-    onDelete:"CASCADE"
+    name: "tag_id",
+    target: "id",
+    allowNull: false,
+    onDelete: "CASCADE",
   },
   foreignKeyConstraints: true,
 });
+
+Post.hasMany(PostTag, {
+  as:"post_tagss",
+  foreignKey: {
+    name: "post_id",
+    allowNull: false,
+  },
+  foreignKeyConstraints: true,
+});
+
+Tag.hasMany(PostTag, {
+  as:"post_tag_tag",
+  foreignKey: {
+    name:"tag_id",
+    allowNull:false
+  },
+  foreignKeyConstraints:true
+})

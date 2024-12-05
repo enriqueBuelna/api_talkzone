@@ -92,21 +92,41 @@ export const getNotifications = async (req, res) => {
 
 // Marcar notificaciones como leídas
 export const markAsRead = async (req, res) => {
-  const { notificationId } = req.params;
+  const { user_id } = req.body;
 
   try {
-    const notification = await Notification.findByPk(notificationId);
+    const notification = await Notification.findAll({
+      where: { receiver_id: user_id, is_read: false },
+    });
     if (!notification) {
       return res.status(404).json({ message: "Notificación no encontrada" });
     }
 
-    notification.is_read = true;
-    await notification.save();
+    notification.forEach(async el => {
+      await el.update({
+        is_read: true
+      })
+    })
 
     return res.status(200).json(notification);
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Error al marcar la notificación como leída", error });
+    console.log(error);
+  }
+};
+
+export const getCantNotifications = async (req, res) => {
+  const { user_id } = req.query;
+
+  try {
+    const notifications = await Notification.findAll({
+      where: {
+        receiver_id: user_id,
+        is_read: false
+      },
+    });
+
+    res.status(201).json(notifications.length);
+  } catch (error) {
+    console.log(error);
   }
 };

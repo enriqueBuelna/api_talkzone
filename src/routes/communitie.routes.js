@@ -19,7 +19,8 @@ import {
   editGroup,
   viewIfOnePending,
   deleteApply,
-  getOutGroup
+  getOutGroup,
+  searchGroup
 } from "../controllers/communities.controllers.js";
 import { getFollowersFollowedd } from "../services/users.services.js";
 
@@ -44,4 +45,5 @@ router.post("/communities/editGroup", editGroup);
 router.post("/communities/viewIfOnePending", viewIfOnePending);
 router.post("/communities/deleteApply", deleteApply);
 router.post("/communities/getOutGroup", getOutGroup);
+router.get("/communities/searchGroup", searchGroup);
 export default router;

@@ -10,8 +10,20 @@ import {
   getLikePost,
   getGroupPost,
   getYourPost,
-  updatePostGroupService
+  updatePostGroupService,
+  searchPostService
 } from "../services/post.services.js";
+
+export const searchPost = async (req, res) => {
+  const {post_content, page, user_id} = req.query;
+
+  try {
+    let results = await searchPostService(post_content, page, user_id);
+    res.status(201).json(results);
+  } catch (error) {
+    res.status(402).json(error);
+  }
+}
 
 export const updatePostGroup = async (req, res) => {
   const { id, content, media_url, visibility} = req.body;
@@ -74,14 +86,15 @@ export const getPostById = async (req, res) => {
 };
 
 export const updatePost = async (req, res) => {
-  const { id, content, media_url, visibility, topic_id } = req.body;
+  const { id, content, media_url, visibility, topic_id, tags } = req.body;
   try {
     const updatedPost = await updatePostService(
       id,
       content,
       media_url,
       visibility,
-      topic_id
+      topic_id,
+      tags
     );
     return res.status(200).json(updatedPost);
   } catch (error) {
