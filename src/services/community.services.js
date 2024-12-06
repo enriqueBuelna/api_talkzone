@@ -6,8 +6,10 @@ import { UserPreference } from "../models/user_preferences.model.js";
 import { User } from "../models/user.model.js";
 import { Post } from "../models/post.models.js";
 import { Like } from "../models/like.model.js";
-export const getPostsByGroup = async (user_id) => {
+export const getPostsByGroup = async (user_id, page, limit = 10) => {
   try {
+    console.log('chivo')
+    const offset = (page - 1) * limit; // Calcular el desplazamiento para la paginación
     const ids = await CommunityMember.findAll({
       where: { user_id },
       attributes: ["group_id"],
@@ -24,7 +26,7 @@ export const getPostsByGroup = async (user_id) => {
       };
       return acc;
     }, {});
-
+    console.log(idGroup, user_id);
     const matchingPost = await Post.findAll({
       where: {
         community_id: idGroup,
@@ -54,8 +56,10 @@ export const getPostsByGroup = async (user_id) => {
           required: false,
         },
       ],
+      offset,
+      limit
     });
-
+    console.log(matchingPost);
     const processedPosts = matchingPost.map((post) => {
       const filteredLikes = post.post_liked.filter(
         (like) => like.user_id === user_id

@@ -187,7 +187,7 @@ export const getVoiceRoomByIdService = async (room_id) => {
 //   }
 // };
 
-export const getVoiceRooms = async (user_id, filter) => {
+export const getVoiceRooms = async (user_id, filter, page = 1, limit = 10) => {
   try {
     // Obtener los IDs de los temas del usuario
     let topics_ids = await getUserPreferencess(user_id);
@@ -205,8 +205,6 @@ export const getVoiceRooms = async (user_id, filter) => {
     }
 
     // Parámetros de paginación (default page=1, limit=10)
-    const page = filter?.page || 1;
-    const limit = filter?.limit || 10;
     const offset = (page - 1) * limit;
 
     // Buscar salas con paginación y orden
@@ -485,9 +483,9 @@ export const isMoreThan10Minutes = async (user_id, room_id) => {
       room_id,
       host.host_user_id
     );
-
     if (!existsValoration) {
       let more = await getUserTotalTimeInRooms(user_id, room_id);
+      console.log(more);
       if (more > 10) {
         return true;
       } else {

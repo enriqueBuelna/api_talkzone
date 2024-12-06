@@ -40,7 +40,7 @@ export const searchGroup = async (req, res) => {
           as: "com_tag_id",
           include: [
             {
-              as:"tag",
+              as: "tag",
               model: Tag,
               where: {
                 tag_name: { [Op.like]: `%${group_name}%` }, // Etiquetas similares
@@ -62,7 +62,7 @@ export const searchGroup = async (req, res) => {
       ],
     });
 
-    res.status(200).json( communities );
+    res.status(200).json(communities);
   } catch (error) {
     console.error("Error al buscar comunidades:", error);
     res.status(500).json({ message: "Error al buscar comunidades." });
@@ -208,27 +208,70 @@ export const responseApply = async (req, res) => {
 };
 
 export const getPostsByGroupp = async (req, res) => {
-  const { user_id } = req.query;
+  const { user_id, page } = req.query;
   try {
-    const matchingPost = await getPostsByGroup(user_id);
+    const matchingPost = await getPostsByGroup(user_id, page);
     res.status(201).json(matchingPost);
   } catch (error) {
     res.status(404).json(error);
   }
 };
 
+// export const discoverGroups = async (req, res) => {
+//   const { user_id } = req.query;
+//   try {
+//     let user = formatResponse(await getUserPreferencess(user_id));
+//     const topicIds = user.map((pref) => pref.topic_id);
+//     const ids = await CommunityMember.findAll({
+//       where: { user_id, [Op.not]: { role: "admin" } },
+//       attributes: ["group_id"],
+//     });
+//     let idGroup = ids.map((el) => el.group_id);
+//     console.log(idGroup);
+//     // Consulta mejorada
+//     const communities = await Community.findAll({
+//       where: {
+//         [Op.and]: [
+//           { creator_id: { [Op.ne]: user_id } }, // El creador no debe ser el usuario
+//           { id: { [Op.notIn]: idGroup } }, // La comunidad no debe estar entre las que el usuario ya es miembro
+//         ],
+//       },
+//       include: [
+//         {
+//           model: UserPreference,
+//           where: { topic_id: topicIds }, // Filtrar por los temas de interés del usuario
+//           include: [
+//             {
+//               model: Topic,
+//               attributes: ["topic_name"],
+//             },
+//           ],
+//         },
+//       ],
+//     });
+//     res.status(201).json(communities);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
 export const discoverGroups = async (req, res) => {
-  const { user_id } = req.query;
+  const { user_id, limit = 10, page = 1 } = req.query; // Valores por defecto
   try {
+    const offset = (page - 1) * limit; // Calcular el desplazamiento para la paginación
+
+    // Obtener las preferencias del usuario
     let user = formatResponse(await getUserPreferencess(user_id));
     const topicIds = user.map((pref) => pref.topic_id);
+
+    // Obtener las comunidades a las que ya pertenece el usuario
     const ids = await CommunityMember.findAll({
       where: { user_id, [Op.not]: { role: "admin" } },
       attributes: ["group_id"],
     });
     let idGroup = ids.map((el) => el.group_id);
-    console.log(idGroup);
-    // Consulta mejorada
+
+    // Consulta para obtener comunidades
     const communities = await Community.findAll({
       where: {
         [Op.and]: [
@@ -248,10 +291,13 @@ export const discoverGroups = async (req, res) => {
           ],
         },
       ],
+      limit,
+      offset
     });
     res.status(201).json(communities);
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    res.status(500).json({ error: "Error al descubrir grupos" });
   }
 };
 

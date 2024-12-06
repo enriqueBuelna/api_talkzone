@@ -168,8 +168,8 @@ export const deleteVoiceRoom = async (req, res) => {
 
 export const getVoiceRoomsByPreferences = async (req, res) => {
   try {
-    const { user_id, filter } = req.body;
-    const results = await getVoiceRooms(user_id, filter);
+    const { user_id, filter, page } = req.body;
+    const results = await getVoiceRooms(user_id, filter, page);
     return res.status(201).json(results);
   } catch (error) {
     console.log(error);
