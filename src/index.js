@@ -27,6 +27,7 @@ import moderationReport from "./routes/moderation_reports.routes.js";
 import userPreferencesTag from "./routes/user_preferences_tags.routes.js";
 import matchmakingConnect from "./routes/mm_user_connect.routes.js";
 import vrMembersRoutes from "./routes/voice_room_member.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 // import emailVerify from "./routes/verification_email.routes.js";
 // import indexRoutes from "./routes/index.routes.js";
 
@@ -80,6 +81,7 @@ app.use(userPreferencesTag);
 app.use(tags);
 app.use(matchmakingConnect);
 app.use(vrMembersRoutes);
+app.use(adminRoutes);
 // app.use(emailVerify);
 
 app.use((req, res, next) => {
