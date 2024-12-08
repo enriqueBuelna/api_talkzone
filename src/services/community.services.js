@@ -90,7 +90,7 @@ export const getGroupsFollowed = async (user_id) => {
     let idGroup = ids.map((el) => el.group_id);
 
     const groups = await Community.findAll({
-      where: { id: idGroup },
+      where: { id: idGroup , status: 'active'},
       include: [
         // { model: Topic, attributes: ["topic_name"] }
         {

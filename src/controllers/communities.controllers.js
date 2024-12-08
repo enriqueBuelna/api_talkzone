@@ -170,11 +170,11 @@ export const getOutGroup = async (req, res) => {
 
     await community.destroy();
     await comm.update({
-      member_count: community.member_count - 1,
+      member_count: comm.member_count - 1,
     });
     res.status(201).json(true);
   } catch (error) {
-    console.log(error);
+    console.log(error, "CHIVO");
   }
 };
 
@@ -299,6 +299,7 @@ export const discoverGroups = async (req, res) => {
           { creator_id: { [Op.ne]: user_id } }, // El creador no debe ser el usuario
           { id: { [Op.notIn]: idGroup } }, // La comunidad no debe estar entre las que el usuario ya es miembro
         ],
+        status: 'active'
       },
       include: [
         {
