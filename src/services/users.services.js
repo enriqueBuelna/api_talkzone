@@ -273,13 +273,13 @@ export const getFollowersFollowedd = async (user_id) => {
           attributes: [],
           required: false,
         },
-        {
-          model: Follower,
-          as: "followers", // Usuarios que siguen al usuario
-          where: { followed_id: user_id },
-          attributes: [],
-          required: false,
-        },
+        // {
+        //   model: Follower,
+        //   as: "followers", // Usuarios que siguen al usuario
+        //   where: { followed_id: user_id },
+        //   attributes: [],
+        //   required: false,
+        // },
       ],
       attributes: ["id", "username", "profile_picture", "is_online", "gender"],
       raw: true,

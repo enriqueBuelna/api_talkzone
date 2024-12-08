@@ -79,14 +79,19 @@ export const editGroup = async (req, res) => {
     cover_picture,
     profile_picture,
   } = req.body;
+  let is_private;
+  if (!privacy) {
+    is_private = false;
+  } else {
+    is_private = true;
+  }
   try {
-    console.log(group_id, about_communitie);
+    console.log(is_private);
     const group = await Community.findOne({
       where: { id: group_id },
     });
-
     group.about_communitie = about_communitie || group.about_communitie;
-    group.privacy = privacy || group.privacy;
+    group.is_private = is_private;
     group.profile_picture = profile_picture || group.profile_picture;
     group.cover_picture = cover_picture || group.cover_picture;
     await group.save();

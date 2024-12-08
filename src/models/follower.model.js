@@ -70,7 +70,7 @@ Follower.belongsTo(User, {
   foreignKeyConstraints: true,
 });
 
-// User.hasMany(Follower, { foreignKey: "follower_id", as: "following" });
+User.hasMany(Follower, { foreignKey: "follower_id", as: "following" });
 // User.hasMany(Follower, { foreignKey: "follower_id", as: "followers" });
 
 
