@@ -6,16 +6,20 @@ import { Follower } from "../models/follower.model.js";
 import { Like } from "../models/like.model.js";
 import { Comment } from "../models/comment.model.js";
 import { getUserPreferencess } from "../services/users.services.js";
+import { UserPreference } from "../models/user_preferences.model.js";
+import { Topic } from "../models/topic.models.js";
+import { UserHostRanking } from "../models/user_host_ranking.model.js";
+import { Op } from "sequelize";
 export const getDetailUser = async (req, res) => {
   let { user_id } = req.query;
   try {
-    if(user_id.length !== 36){
-      res.status(404).json("No encontrado")
+    if (user_id.length !== 36) {
+      res.status(404).json("No encontrado");
     }
     let username = await User.findOne({
       where: {
         id: user_id,
-      }
+      },
     });
     let cant_posts = await Post.count({
       where: {
@@ -79,7 +83,7 @@ export const getDetailUser = async (req, res) => {
       cant_likes_gived,
       cant_likes_received,
       themes,
-      username: username.username
+      username: username.username,
     };
     res.status(201).json(response);
   } catch (error) {
@@ -141,5 +145,221 @@ export const getAllUsers = async (req, res) => {
     res.status(201).json(users);
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const getStatsCurious = async (req, res) => {
+  try {
+    //post
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const recordsLast7DaysPost = await Post.count({
+      where: {
+        created_at: {
+          [Op.gte]: sevenDaysAgo, // Mayor o igual que hace 7 días
+        },
+      },
+    });
+
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    const recordsLastMonthPost = await Post.count({
+      where: {
+        created_at: {
+          [Op.gte]: oneMonthAgo, // Mayor o igual que hace 1 mes
+        },
+      },
+    });
+
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const recordsLast6MonthsPost = await Post.count({
+      where: {
+        created_at: {
+          [Op.gte]: sixMonthsAgo, // Mayor o igual que hace 6 meses
+        },
+      },
+    });
+
+    //users
+    const recordsLast7DaysUser = await User.count({
+      where: {
+        created_at: {
+          [Op.gte]: sevenDaysAgo, // Mayor o igual que hace 7 días
+        },
+      },
+    });
+    const recordsLastMonthUser = await User.count({
+      where: {
+        created_at: {
+          [Op.gte]: oneMonthAgo, // Mayor o igual que hace 1 mes
+        },
+      },
+    });
+    const recordsLast6MonthsUser = await User.count({
+      where: {
+        created_at: {
+          [Op.gte]: sixMonthsAgo, // Mayor o igual que hace 6 meses
+        },
+      },
+    });
+
+    //voice_rooms
+    const recordsLast7DaysRoom = await VoiceRoom.count({
+      where: {
+        created_at: {
+          [Op.gte]: sevenDaysAgo, // Mayor o igual que hace 7 días
+        },
+      },
+    });
+    const recordsLastMonthRoom = await VoiceRoom.count({
+      where: {
+        created_at: {
+          [Op.gte]: oneMonthAgo, // Mayor o igual que hace 1 mes
+        },
+      },
+    });
+    const recordsLast6MonthsRoom = await VoiceRoom.count({
+      where: {
+        created_at: {
+          [Op.gte]: sixMonthsAgo, // Mayor o igual que hace 6 meses
+        },
+      },
+    });
+
+    //all
+    const allPost = await Post.count();
+    const allRoom = await VoiceRoom.count();
+    const allUsers = await User.count();
+
+    let response = {
+      sevenPost: recordsLast7DaysPost,
+      monthPost: recordsLastMonthPost,
+      sixMonthPost: recordsLast6MonthsPost,
+      sevenUser: recordsLast7DaysUser,
+      monthUser: recordsLastMonthUser,
+      sixMonthUser: recordsLast6MonthsUser,
+      sevenRoom: recordsLast7DaysRoom,
+      monthRoom: recordsLastMonthRoom,
+      sixMonthRoom: recordsLast6MonthsRoom,
+      allPost,
+      allRoom,
+      allUsers
+    };
+
+    res.status(201).json(response);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getTopTopics = async (req, res) => {
+  try {
+    // Obtener las publicaciones con las preferencias y temas relacionados
+    const posts = await Post.findAll({
+      include: [
+        {
+          as: "post_user_preference",
+          model: UserPreference,
+          include: [
+            {
+              model: Topic,
+              attributes: ["id", "topic_name"],
+            },
+          ],
+          attributes: ["id", "type"],
+        },
+      ],
+      attributes: ["id"],
+    });
+
+    // Transformar los resultados para agrupar por topic_id y contar
+    const topicCounts = posts.reduce((acc, post) => {
+      const topic = post.post_user_preference?.topic;
+      if (topic) {
+        const { id: topicId, topic_name: topicName } = topic;
+        acc[topicId] = acc[topicId] || { topicId, topicName, count: 0 };
+        acc[topicId].count += 1;
+      }
+      return acc;
+    }, {});
+
+    // Convertir el objeto a un arreglo y ordenar por la cantidad de publicaciones
+    const sortedTopics = Object.values(topicCounts).sort(
+      (a, b) => b.count - a.count
+    );
+
+    // Obtener solo los 5 más usados
+    const top5Topics = sortedTopics.slice(0, 5);
+
+    // Responder con el resultado
+    return res.status(200).json(top5Topics);
+  } catch (error) {
+    console.error("Error fetching top topics:", error);
+    return res.status(500).json({ message: "Error fetching top topics" });
+  }
+};
+
+export const getTopTopicsRoom = async (req, res) => {
+  try {
+    const topicsRoom = await VoiceRoom.findAll({
+      include: [
+        {
+          model: Topic,
+          attributes: ["id", "topic_name"],
+        },
+      ],
+      attributes: ["id"],
+    });
+    // Agrupar por topic_id y contar las ocurrencias
+    const topicCounts = topicsRoom.reduce((acc, room) => {
+      const topic = room.topic; // Acceder al tema relacionado
+      console.log(topic)
+      if (topic) {
+        const { id: topicId, topic_name: topicName } = topic;
+        acc[topicId] = acc[topicId] || { topicId, topicName, count: 0 };
+        acc[topicId].count += 1;
+      }
+      return acc;
+    }, {});
+
+    // Convertir el objeto a un arreglo y ordenar por cantidad de ocurrencias
+    const sortedTopics = Object.values(topicCounts).sort(
+      (a, b) => b.count - a.count
+    );
+
+    // Obtener solo los 5 más usados
+    const top5Topics = sortedTopics.slice(0, 5);
+
+    // Responder con el resultado
+    return res.status(200).json(top5Topics);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getTopHosts = async (req, res) => {
+  try {
+    // Consultar la tabla UserHostRanking y unirla con la información del usuario
+    const topHosts = await UserHostRanking.findAll({
+      include: [
+        {
+          model: User,
+          attributes: ["id", "username", "profile_picture", "gender"], // Ajusta los atributos según tu modelo de User
+        },
+      ],
+      attributes: ["average_rating", "total_ratings"],
+      order: [["average_rating", "DESC"], ["total_ratings", "DESC"]], // Ordenar por promedio y luego por total de ratings
+      limit: 5, // Limitar a los 5 mejores
+    });
+
+    // Responder con los datos del ranking
+    return res.status(200).json(topHosts);
+  } catch (error) {
+    console.error("Error fetching top hosts:", error);
+    return res.status(500).json({ message: "Error fetching top hosts" });
   }
 };

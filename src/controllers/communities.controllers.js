@@ -10,7 +10,10 @@ import {
   getUserProileInformation,
 } from "../services/users.services.js";
 import {
+  getAllGroupss,
   getGroupsFollowed,
+  getGroupStatss,
+  getMostPopularGroups,
   getPostsByGroup,
 } from "../services/community.services.js";
 import { CommunityTags } from "../models/community_tag.model.js";
@@ -140,7 +143,9 @@ export const getInGroup = async (req, res) => {
       user_id,
       group_id,
     });
-    await community.update({});
+    await community.update({
+      member_count: community.member_count + 1,
+    });
     res.status(201).json(true);
   } catch (error) {
     console.log(error);
@@ -150,11 +155,18 @@ export const getInGroup = async (req, res) => {
 export const getOutGroup = async (req, res) => {
   const { user_id, group_id } = req.body;
   try {
+    const comm = await Community.findOne({
+      where: { id: group_id },
+    });
+
     const community = await CommunityMember.findOne({
       where: { group_id, user_id },
     });
 
     await community.destroy();
+    await comm.update({
+      member_count: community.member_count - 1,
+    });
     res.status(201).json(true);
   } catch (error) {
     console.log(error);
@@ -198,6 +210,10 @@ export const responseApply = async (req, res) => {
         type: filter.type,
         user_id,
         group_id,
+      });
+
+      await community.update({
+        member_count: community.member_count + 1,
       });
     }
 
@@ -292,7 +308,7 @@ export const discoverGroups = async (req, res) => {
         },
       ],
       limit,
-      offset
+      offset,
     });
     res.status(201).json(communities);
   } catch (error) {
@@ -338,6 +354,10 @@ export const createCommunity = async (req, res) => {
       type,
       user_id: creator_id,
       group_id: newCommunity.id,
+    });
+
+    await newCommunity.update({
+      member_count: newCommunity.member_count + 1,
     });
 
     res.status(201).json(newCommunity);
@@ -624,5 +644,33 @@ export const deleteApply = async (req, res) => {
     res.status(201).json(true);
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const getAllGroups = async (req, res) => {
+  try {
+    let allGroups = await getAllGroupss();
+    res.status(201).json(allGroups);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const mostPopularGroups = async (req, res) => {
+  try {
+    let mostGroups = await getMostPopularGroups();
+    res.status(201).json(mostGroups);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getGroupStats = async (req, res) => {
+  const { id } = req.query;
+  try {
+    let groups = await getGroupStatss(id);
+    res.status(201).json(groups);
+  } catch (error) {
+    res.status(402).json(error);
   }
 };

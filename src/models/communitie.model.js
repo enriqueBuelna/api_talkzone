@@ -60,6 +60,18 @@ export const Community = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: true
     },
+    member_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    last_activity: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    status: {
+      type: DataTypes.ENUM('active', 'suspended'),
+      defaultValue: 'active'
+    }
   },
   {
     tableName: "Communities", // Nombre de la tabla en la base de datos

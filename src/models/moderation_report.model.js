@@ -1,7 +1,10 @@
 import { DataTypes } from "@sequelize/core";
 import sequelize from "../../db/db.js";
 import { User } from "./user.model.js";
-
+import { Message } from "./message.models.js";
+import { Comment } from "./comment.model.js";
+import { VoiceRoom } from "./voice_rooms.models.js";
+import { Post } from "./post.models.js";
 export const ModerationReport = sequelize.define(
   "ModerationReport",
   {
@@ -31,18 +34,38 @@ export const ModerationReport = sequelize.define(
     post_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      references: {
+        model: Post,
+        key: "id",
+      },
+      onDelete: "CASCADE",
     },
     comment_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      references: {
+        model: Comment,
+        key: "id",
+      },
+      onDelete: "CASCADE",
     },
     room_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      references: {
+        model: VoiceRoom,
+        key: "id",
+      },
+      onDelete: "CASCADE",
     },
     message_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      references: {
+        model: Message,
+        key: "id",
+      },
+      onDelete: "CASCADE",
     },
     reason: {
       type: DataTypes.TEXT,
@@ -87,7 +110,43 @@ ModerationReport.belongsTo(User, {
     allowNull: false,
     onDelete: "CASCADE",
   },
-  as: "reportedUser",
+  as: "reported",
+});
+
+ModerationReport.belongsTo(Post, {
+  foreignKeyConstraints: true,
+  foreignKey: {
+    name: "post_id",
+    allowNull: true,
+  },
+  as:'reportedPost'
+});
+
+ModerationReport.belongsTo(Message, {
+  foreignKeyConstraints: true,
+  foreignKey: {
+    name: "message_id",
+    allowNull: true,
+  },
+  as:'reportedMessage'
+});
+
+ModerationReport.belongsTo(Comment, {
+  foreignKeyConstraints: true,
+  foreignKey: {
+    name: "comment_id",
+    allowNull: true,
+  },
+  as: 'reportedComment'
+});
+
+ModerationReport.belongsTo(VoiceRoom, {
+  foreignKeyConstraints: true,
+  foreignKey: {
+    name: "room_id",
+    allowNull: true,
+  },
+  as: 'reportedRoom'
 });
 
 // Otras relaciones pueden ser definidas según sea necesario
