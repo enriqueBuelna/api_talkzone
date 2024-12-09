@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { getPrincipalStats, getAllUsers, getMostFollowed, getDetailUser, getTopTopics, getTopHosts, getTopTopicsRoom, getStatsCurious } from "../controllers/admin.controllers.js";
+import { getPrincipalStats, getAllUsers, getMostFollowed, getDetailUser, getTopTopics, getTopHosts, getTopTopicsRoom, getStatsCurious, deleteContent } from "../controllers/admin.controllers.js";
 import { getAllGroups, mostPopularGroups, getGroupStats } from "../controllers/communities.controllers.js";
 
 const router = Router();
@@ -16,4 +16,5 @@ router.get("/admin/getGroupsStats", getGroupStats);
 router.get("/admin/getTopTopicsPost", getTopTopics);
 router.get("/admin/getTopTopicsRoom", getTopTopicsRoom)
 router.get("/admin/getTopHost", getTopHosts);
+router.post("/admin/deleteContent", deleteContent);
 export default router;

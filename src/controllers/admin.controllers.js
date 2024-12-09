@@ -10,6 +10,8 @@ import { UserPreference } from "../models/user_preferences.model.js";
 import { Topic } from "../models/topic.models.js";
 import { UserHostRanking } from "../models/user_host_ranking.model.js";
 import { Op } from "sequelize";
+import { Message } from "../models/message.models.js";
+import { ModerationReport } from "../models/moderation_report.model.js";
 export const getDetailUser = async (req, res) => {
   let { user_id } = req.query;
   try {
@@ -86,6 +88,37 @@ export const getDetailUser = async (req, res) => {
       username: username.username,
     };
     res.status(201).json(response);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteContent = async (req, res) => {
+  const { type, report_id } = req.body;
+
+  try {
+    let report = await ModerationReport.findByPk(report_id);
+    // if(type === 'message'){
+    //   let message = await Message.findByPk(content_id);
+    //   await message.destroy();
+    // }else if(type === 'post'){
+    //   let post = await Post.findByPk(content_id);
+    //   await post.destroy();
+    // }
+
+    if (report.message_id) {
+      let message = await Message.findByPk(report.message_id);
+      await message.destroy();
+    } else if (report.post_id) {
+      let post = await Post.findByPk(report.post_id);
+      await post.destroy();
+    }
+
+    await report.update({
+      result: "Contenido borrado",
+      status: "resolved",
+    });
+    res.status(201).json(true);
   } catch (error) {
     console.log(error);
   }
@@ -247,7 +280,7 @@ export const getStatsCurious = async (req, res) => {
       sixMonthRoom: recordsLast6MonthsRoom,
       allPost,
       allRoom,
-      allUsers
+      allUsers,
     };
 
     res.status(201).json(response);
@@ -317,7 +350,7 @@ export const getTopTopicsRoom = async (req, res) => {
     // Agrupar por topic_id y contar las ocurrencias
     const topicCounts = topicsRoom.reduce((acc, room) => {
       const topic = room.topic; // Acceder al tema relacionado
-      console.log(topic)
+      console.log(topic);
       if (topic) {
         const { id: topicId, topic_name: topicName } = topic;
         acc[topicId] = acc[topicId] || { topicId, topicName, count: 0 };
@@ -352,7 +385,10 @@ export const getTopHosts = async (req, res) => {
         },
       ],
       attributes: ["average_rating", "total_ratings"],
-      order: [["average_rating", "DESC"], ["total_ratings", "DESC"]], // Ordenar por promedio y luego por total de ratings
+      order: [
+        ["average_rating", "DESC"],
+        ["total_ratings", "DESC"],
+      ], // Ordenar por promedio y luego por total de ratings
       limit: 5, // Limitar a los 5 mejores
     });
 

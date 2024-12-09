@@ -38,7 +38,6 @@ export const ModerationReport = sequelize.define(
         model: Post,
         key: "id",
       },
-      onDelete: "CASCADE",
     },
     comment_id: {
       type: DataTypes.INTEGER,
@@ -47,7 +46,6 @@ export const ModerationReport = sequelize.define(
         model: Comment,
         key: "id",
       },
-      onDelete: "CASCADE",
     },
     room_id: {
       type: DataTypes.INTEGER,
@@ -56,7 +54,6 @@ export const ModerationReport = sequelize.define(
         model: VoiceRoom,
         key: "id",
       },
-      onDelete: "CASCADE",
     },
     message_id: {
       type: DataTypes.INTEGER,
@@ -65,7 +62,6 @@ export const ModerationReport = sequelize.define(
         model: Message,
         key: "id",
       },
-      onDelete: "CASCADE",
     },
     reason: {
       type: DataTypes.TEXT,
