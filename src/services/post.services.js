@@ -674,7 +674,7 @@ export const deletePostService = async (id) => {
     // Eliminar la publicación
     await post.destroy();
 
-    return { message: "Publicación eliminada exitosamente" };
+    return true;
   } catch (error) {
     console.error("Error al eliminar la publicación:", error);
     throw new Error("Error al eliminar la publicación");

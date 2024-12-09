@@ -13,13 +13,22 @@ export const getPostsByGroup = async (user_id, page, limit = 10) => {
     const offset = (page - 1) * limit; // Calcular el desplazamiento para la paginación
     const ids = await CommunityMember.findAll({
       where: { user_id },
+      include: [
+        {
+          model: Community,
+          where: {
+            status: 'active'
+          }
+        }
+      ],
       attributes: ["group_id"],
     });
     let idGroup = ids.map((el) => el.group_id);
     const communityNames = await Community.findAll({
-      where: { id: idGroup },
+      where: { id: idGroup, status: 'active' },
       attributes: ["id", "communitie_name", "profile_picture"],
     });
+    console.log(idGroup)
     const communityMap = communityNames.reduce((acc, community) => {
       acc[community.id] = {
         communitie_name: community.communitie_name,
@@ -27,7 +36,6 @@ export const getPostsByGroup = async (user_id, page, limit = 10) => {
       };
       return acc;
     }, {});
-    console.log(idGroup, user_id);
     const matchingPost = await Post.findAll({
       where: {
         community_id: idGroup,
@@ -60,7 +68,6 @@ export const getPostsByGroup = async (user_id, page, limit = 10) => {
       offset,
       limit,
     });
-    console.log(matchingPost);
     const processedPosts = matchingPost.map((post) => {
       const filteredLikes = post.post_liked.filter(
         (like) => like.user_id === user_id

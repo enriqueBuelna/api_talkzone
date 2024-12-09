@@ -81,7 +81,7 @@ export const getPostById = async (req, res) => {
     const post = await getPostByIdService(id, user_id);
     return res.status(201).json(post);
   } catch (error) {
-    console.log(error);
+    res.status(200).json(null);
   }
 };
 
@@ -104,7 +104,7 @@ export const updatePost = async (req, res) => {
 };
 
 export const deletePost = async (req, res) => {
-  const { id } = req.params; // ID del post que se quiere eliminar
+  const { id } = req.query; // ID del post que se quiere eliminar
 
   try {
     const result = await deletePostService(id);

@@ -215,7 +215,6 @@ export const getBasicInfoo = async (user_id) => {
 
 export const getUserPreferencess = async (userId) => {
   try {
-    console.log("USO ESTA CHIVIN")
     const userPreferences = await UserPreference.findAll({
       where: { user_id: userId, is_active: true },
       include: [
