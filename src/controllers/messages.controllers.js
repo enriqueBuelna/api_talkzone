@@ -1,4 +1,37 @@
 import * as messageService from "../services/messages.services.js";
+import { Message } from "../models/message.models.js";
+import { ModerationReport } from "../models/moderation_report.model.js";
+export const getUnreadMessages = async (req, res) => {
+  const {user_id} = req.query;
+  try {
+    const unreadMessagesCount = await Message.count({
+      where: {
+        receiver_id: user_id,
+        is_read: false,
+      },
+    });
+
+    res.status(201).json(unreadMessagesCount);
+  } catch (error) {
+    
+  }
+}
+
+export const reportMessage = async (req, res) => {
+  const {reason, details, reported_user_id, reporter_id, message_id} = req.body;   
+  try {
+    const newReport = await ModerationReport.create({
+      reason,
+      details,
+      reported_user_id,
+      reporter_id,
+      message_id
+    });
+    res.status(201).json(true);
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 export const postMessage = async (req, res) => {
   const { sender_id, receiver_id, content, media_url } = req.body;

@@ -14,6 +14,27 @@ import { getUserPreferencess } from "./users.services.js";
 import { Like } from "../models/like.model.js";
 import { json, Op, Sequelize } from "sequelize";
 import { Community } from "../models/communitie.model.js";
+import { ModerationReport } from "../models/moderation_report.model.js";
+export const reportPostService = async (
+  reason,
+  details,
+  reported_user_id,
+  reporter_id,
+  post_id
+) => {
+  try {
+    const newReport = await ModerationReport.create({
+      reason,
+      details,
+      reported_user_id,
+      reporter_id,
+      post_id,
+    });
+    return true;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 export const searchPostService = async (post_content, page, user_id) => {
   try {
@@ -74,7 +95,7 @@ export const searchPostService = async (post_content, page, user_id) => {
     const matchingPostTags = await PostTag.findAll({
       include: [
         {
-          as:"post_tag_tag",
+          as: "post_tag_tag",
           model: Tag, // Relación con Tag
           where: {
             tag_name: { [Op.like]: `%${post_content}%` }, // Filtro en tag_name

@@ -11,8 +11,19 @@ import {
   getGroupPost,
   getYourPost,
   updatePostGroupService,
-  searchPostService
+  searchPostService,
+  reportPostService
 } from "../services/post.services.js";
+
+export const reportPost = async (req, res) => {
+  const {reason, details, reported_user_id, reporter_id, post_id} = req.body;
+  try {
+     let result = await reportPostService(reason, details, reported_user_id, reporter_id, post_id);
+     res.status(201).json(result) 
+  } catch (error) {
+    
+  }
+}
 
 export const searchPost = async (req, res) => {
   const {post_content, page, user_id} = req.query;

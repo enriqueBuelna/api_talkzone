@@ -83,6 +83,14 @@ export const ModerationReport = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    details: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    result: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    }
   },
   {
     tableName: "Moderation_reports", // Nombre de la tabla en la base de datos

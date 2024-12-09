@@ -116,7 +116,7 @@ export const getMessagesBetweenUsers = async (sender_id, receiver_id) => {
           { sender_id: receiver_id, receiver_id: sender_id },
         ],
       },
-      attributes: ["content", "sent_at", "sender_id"], // Seleccionar solo content y sent_at
+      attributes: ["content", "sent_at", "sender_id", "id"], // Seleccionar solo content y sent_at
       order: [["sent_at", "ASC"]], // Ordenar por fecha de envío
       raw: true,
     });
@@ -191,8 +191,6 @@ export const getMyConversation = async (user_id) => {
         return convo;
       })
     );
-
-    console.log(conversationData);
     return conversationData;
   } catch (error) {
     console.error("Error obteniendo las conversaciones: ", error);

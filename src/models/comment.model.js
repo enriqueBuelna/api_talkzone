@@ -66,10 +66,9 @@ Comment.belongsTo(Post, {
   as:"postss",
   foreignKeyConstraints: true,
   foreignKey: {
-    name: "post_id",
     target: "id",
+    name:"post_id",
     allowNull: false,
-    onDelete: "CASCADE",
   },
 });
 

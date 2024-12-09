@@ -118,6 +118,7 @@ export const getModerationReportById = async (req, res) => {
     } else if (report.room_id) {
       type = "room";
     }
+    console.log(type);
     let response;
     if (type === "post") {
       response = await Post.findOne({

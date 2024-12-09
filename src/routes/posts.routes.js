@@ -13,7 +13,8 @@ import {
   updatePost,
   updatePostGroup,
   searchPost,
-  deletePost
+  deletePost,
+  reportPost
 } from "../controllers/posts.controllers.js";
 const router = Router();
 
@@ -30,4 +31,5 @@ router.post("/posts/updatePost", updatePost);
 router.post("/posts/updatePostGroup", updatePostGroup);
 router.get("/posts/searchPost", searchPost);
 router.delete("/posts/deletePost", deletePost);
+router.post("/posts/reportPost", reportPost);
 export default router;

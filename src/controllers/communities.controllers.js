@@ -78,6 +78,7 @@ export const editGroup = async (req, res) => {
     privacy,
     cover_picture,
     profile_picture,
+    status,
   } = req.body;
   let is_private;
   if (!privacy) {
@@ -94,6 +95,7 @@ export const editGroup = async (req, res) => {
     group.is_private = is_private;
     group.profile_picture = profile_picture || group.profile_picture;
     group.cover_picture = cover_picture || group.cover_picture;
+    group.status = status || group.status;
     await group.save();
     res.status(201).json(true);
   } catch (error) {
@@ -299,7 +301,7 @@ export const discoverGroups = async (req, res) => {
           { creator_id: { [Op.ne]: user_id } }, // El creador no debe ser el usuario
           { id: { [Op.notIn]: idGroup } }, // La comunidad no debe estar entre las que el usuario ya es miembro
         ],
-        status: 'active'
+        status: "active",
       },
       include: [
         {

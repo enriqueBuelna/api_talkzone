@@ -63,24 +63,33 @@ export const getNotifications = async (req, res) => {
                 {
                   association: "postss",
                   model: Post,
-                  attributes: ["id"], // Información de la publicación original
                 },
               ],
-              attributes: ["id"], // Información del comentario
+              // attributes: ["id"], // Información del comentario
             },
           ],
         },
+        {
+          model: Comment,
+          include: [
+            {
+              association: "postss",
+              model: Post,
+            },
+          ],
+          // attributes: ["id"], // Información del comentario
+        },
       ],
-      attributes: [
-        "id",
-        "type",
-        "related_post_id",
-        "related_comment_id",
-        "related_like_id",
-        "related_room_open_id",
-        "related_message_id",
-        "follower_id",
-      ],
+      // attributes: [
+      //   "id",
+      //   "type",
+      //   "related_post_id",
+      //   "related_comment_id",
+      //   "related_like_id",
+      //   "related_room_open_id",
+      //   "related_message_id",
+      //   "follower_id",
+      // ],
       order: [["created_at", "DESC"]],
     });
 
