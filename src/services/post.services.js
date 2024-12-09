@@ -139,7 +139,7 @@ export const searchPostService = async (post_content, page, user_id) => {
         {
           model: User,
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture"],
+          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
         },
         {
           model: UserPreference,
@@ -204,7 +204,7 @@ export const getGroupPost = async (community_id, page, user_id) => {
         {
           model: User,
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture"],
+          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
         },
         {
           model: UserPreference,
@@ -412,7 +412,7 @@ export const createPostService = async (
         {
           model: User,
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture"],
+          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
         },
         {
           model: UserPreference,
@@ -599,7 +599,7 @@ export const getPostByIdService = async (postId, user_id) => {
         {
           model: User,
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture"],
+          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
         },
         {
           model: UserPreference,
@@ -618,7 +618,7 @@ export const getPostByIdService = async (postId, user_id) => {
             {
               as: "userss",
               model: User, // Include the user info for each comment
-              attributes: ["id", "username", "gender", "profile_picture"],
+              attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
             },
           ],
           attributes: ["id", "content", "likes_count"],
@@ -846,7 +846,7 @@ export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
         {
           model: User,
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture"],
+          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
         },
         {
           model: UserPreference,
@@ -933,7 +933,7 @@ export const getPostFriends = async (user_id) => {
         {
           model: User,
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture"],
+          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
         },
         {
           model: UserPreference,
@@ -1000,7 +1000,7 @@ export const getYourPost = async (user_id, page = 1, other_user_id) => {
         {
           model: User,
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture"],
+          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
         },
         {
           model: UserPreference,
@@ -1075,7 +1075,7 @@ export const getLikePost = async (user_id, page = 1, pageSize = 10) => {
         {
           model: User,
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture"],
+          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
         },
         {
           model: UserPreference,

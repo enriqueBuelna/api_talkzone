@@ -129,7 +129,7 @@ export const getModerationReportById = async (req, res) => {
           {
             model: User,
             as: "post_user",
-            attributes: ["id", "username", "gender", "profile_picture"],
+            attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
           },
           {
             model: UserPreference,
@@ -165,7 +165,7 @@ export const getModerationReportById = async (req, res) => {
           {
             model: User,
             as: "userss",
-            attributes: ["id", "username", "gender", "profile_picture"],
+            attributes: ["id", "username", "gender", "profile_picture","is_verified"],
           },
         ],
       });

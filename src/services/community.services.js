@@ -45,7 +45,7 @@ export const getPostsByGroup = async (user_id, page, limit = 10) => {
         {
           model: User,
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture"],
+          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
         },
         {
           model: UserPreference,

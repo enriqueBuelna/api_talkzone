@@ -158,18 +158,19 @@ export const changeOnline = async (id, option) => {
       where: { id },
     });
 
-    // Verificar si el usuario existe
-    if (!user) {
-      throw new Error("Usuario no encontrado");
-    }
+    console.log(user);
+    // // Verificar si el usuario existe
+    // if (!user) {
+    //   throw new Error("Usuario no encontrado");
+    // }
 
-    // Actualizar el estado en línea (is_online) con la opción proporcionada
-    user.is_online = option;
+    // // Actualizar el estado en línea (is_online) con la opción proporcionada
+    // user.is_online = option;
 
-    // Guardar los cambios en la base de datos
-    await user.save();
+    // // Guardar los cambios en la base de datos
+    // await user.save();
 
-    return { message: `Usuario ${option ? "conectado" : "desconectado"}` };
+    // return { message: `Usuario ${option ? "conectado" : "desconectado"}` };
   } catch (error) {
     throw new Error(`Error al cambiar el estado en línea: ${error.message}`);
   }
@@ -203,7 +204,7 @@ export const getBasicInfoo = async (user_id) => {
   try {
     const user = await User.findOne({
       where: { id: user_id },
-      attributes: ["id", "username", "profile_picture", "gender"],
+      attributes: ["id", "username", "profile_picture", "gender", "is_verified"],
     });
     return user;
   } catch (error) {
@@ -251,7 +252,7 @@ export const getUserProileInformation = async (user_id) => {
   try {
     const user = await User.findOne({
       where: { id: user_id },
-      attributes: ["username", "profile_picture", "is_online", "gender"],
+      attributes: ["username", "profile_picture", "is_online", "gender", "is_verified"],
       raw: true,
     });
     return user;
@@ -308,6 +309,7 @@ export const getCompleteProfilee = async (user_id) => {
         "gender",
         "about_me",
         "cover_picture",
+        "is_verified"
       ],
       include: [
         {

@@ -221,7 +221,7 @@ export const getVoiceRooms = async (user_id, filter, page = 1, limit = 10) => {
             {
               association: "user_information_voice_room",
               model: User,
-              attributes: ["username", "profile_picture", "id"],
+              attributes: ["username", "profile_picture", "id", "is_verified"],
             },
           ],
           attributes: ["id"],
@@ -245,7 +245,7 @@ export const getVoiceRooms = async (user_id, filter, page = 1, limit = 10) => {
         {
           model: User,
           as: "host_user",
-          attributes: ["username", "profile_picture", "id"],
+          attributes: ["username", "profile_picture", "id", "is_verified"],
           include: [
             {
               model: UserHostRanking,

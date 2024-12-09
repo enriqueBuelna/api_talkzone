@@ -45,11 +45,17 @@ export const getFollowers = async (user_id) => {
         {
           model: User,
           as: "followers", // Asegúrate de que este alias coincida con tu definición de relación
-          attributes: ["id", "username", "profile_picture", "gender"], // Selecciona solo los campos deseados
+          attributes: [
+            "id",
+            "username",
+            "profile_picture",
+            "gender",
+            "is_verified",
+          ], // Selecciona solo los campos deseados
         },
       ],
     });
-    
+
     // Mapear los resultados para obtener solo la información necesaria
     const usersFollowing = following.map((follow) => follow.followers);
     return usersFollowing;
@@ -83,7 +89,13 @@ export const getFollowing = async (id) => {
       {
         model: User,
         as: "followed", // Asegúrate de que este alias coincida con tu definición de relación
-        attributes: ["id", "username", "profile_picture", "gender"], // Selecciona solo los campos deseados
+        attributes: [
+          "id",
+          "username",
+          "profile_picture",
+          "gender",
+          "is_verified",
+        ], // Selecciona solo los campos deseados
       },
     ],
   });
@@ -134,13 +146,13 @@ export const deleteFollower = async (user_id, user_follower) => {
     const follower = await Follower.findOne({
       where: {
         followed_id: user_id,
-        follower_id: user_follower
-      }
-    })
+        follower_id: user_follower,
+      },
+    });
 
     await follower.destroy();
     return true;
   } catch (error) {
     console.log(error);
   }
-}
+};

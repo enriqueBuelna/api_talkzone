@@ -151,12 +151,12 @@ export const getMyConversation = async (user_id) => {
         {
           model: User,
           as: "user_chat",
-          attributes: ["id", "username", "profile_picture"],
+          attributes: ["id", "username", "profile_picture", "is_verified"],
         },
         {
           model: User,
           as: "user_chat_1",
-          attributes: ["id", "username", "profile_picture"],
+          attributes: ["id", "username", "profile_picture", "is_verified"],
         },
       ],
     });

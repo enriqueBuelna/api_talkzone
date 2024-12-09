@@ -115,7 +115,7 @@ export const pendingApplies = async (req, res) => {
       include: [
         {
           model: User,
-          attributes: ["id", "username", "gender", "profile_picture"],
+          attributes: ["id", "username", "gender", "profile_picture","is_verified"],
         },
       ],
     });
@@ -506,7 +506,7 @@ export const getGroupInformationById = async (req, res) => {
           include: [
             {
               model: User,
-              attributes: ["id", "username", "profile_picture", "gender"],
+              attributes: ["id", "username", "profile_picture", "gender", "is_verified"],
             },
           ],
         },

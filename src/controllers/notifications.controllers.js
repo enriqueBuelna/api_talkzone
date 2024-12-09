@@ -45,7 +45,7 @@ export const getNotifications = async (req, res) => {
         {
           model: User,
           as: "userSender",
-          attributes: ["id", "username", "profile_picture", "gender"],
+          attributes: ["id", "username", "profile_picture", "gender", "is_verified"],
         }, // Incluir información del remitente
         // Incluir otras relaciones si es necesario
         {

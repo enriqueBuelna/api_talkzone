@@ -12,6 +12,32 @@ import { UserHostRanking } from "../models/user_host_ranking.model.js";
 import { Op } from "sequelize";
 import { Message } from "../models/message.models.js";
 import { ModerationReport } from "../models/moderation_report.model.js";
+
+export const verifyUser = async (req, res) => {
+  let { user_id } = req.body;
+  console.log(user_id);
+  try {
+    let user = await User.findByPk(user_id);
+    await user.update({
+      is_verified: true,
+    });
+    res.status(201).json(true);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const unverifyUser = async (req, res) => {
+  let { user_id } = req.body;
+  try {
+    let user = await User.findByPk(user_id);
+    await user.update({
+      is_verified: false,
+    });
+    res.status(201).json(true);
+  } catch (error) {}
+};
+
 export const getDetailUser = async (req, res) => {
   let { user_id } = req.query;
   try {
@@ -86,6 +112,7 @@ export const getDetailUser = async (req, res) => {
       cant_likes_received,
       themes,
       username: username.username,
+      is_verified: username.is_verified,
     };
     res.status(201).json(response);
   } catch (error) {
@@ -381,7 +408,7 @@ export const getTopHosts = async (req, res) => {
       include: [
         {
           model: User,
-          attributes: ["id", "username", "profile_picture", "gender"], // Ajusta los atributos según tu modelo de User
+          attributes: ["id", "username", "profile_picture", "gender", "is_verified"], // Ajusta los atributos según tu modelo de User
         },
       ],
       attributes: ["average_rating", "total_ratings"],
