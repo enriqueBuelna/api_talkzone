@@ -70,6 +70,7 @@ export const loginUser = async (req, res) => {
       username: publicUser.username,
       user_role: publicUser.user_role,
       is_profile_complete: publicUser.is_profile_complete,
+      is_banned: publicUser.is_banned
     };
     res
       .cookie("access_token", token, {

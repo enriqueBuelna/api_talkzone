@@ -57,6 +57,7 @@ export const loginUserService = async ({ username, password }) => {
       username: user.username,
       user_role: user.user_role,
       is_profile_complete: user.is_profile_complete,
+      is_banned: user.is_banned
     },
     process.env.SECRET_KEY,
     { expiresIn: "1h" }

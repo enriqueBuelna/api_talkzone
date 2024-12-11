@@ -117,10 +117,20 @@ export const getModerationReportById = async (req, res) => {
       type = "message";
     } else if (report.room_id) {
       type = "room";
+    } else {
+      type = "remove";
     }
-    console.log(type);
     let response;
-    if (type === "post") {
+    if (report.status == "resolved" && report.result == "Contenido borrado") {
+      response = {
+        type,
+        action: "Contenido borrado",
+      };
+      return res.status(201).json(response);
+    } else if (
+      report.status == "resolved" &&
+      report.result == "Advertencia enviada"
+    ) {
       response = await Post.findOne({
         where: {
           id: report.post_id,
@@ -129,7 +139,13 @@ export const getModerationReportById = async (req, res) => {
           {
             model: User,
             as: "post_user",
-            attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+            attributes: [
+              "id",
+              "username",
+              "gender",
+              "profile_picture",
+              "is_verified",
+            ],
           },
           {
             model: UserPreference,
@@ -156,64 +172,119 @@ export const getModerationReportById = async (req, res) => {
           },
         ],
       });
-    } else if (type === "comment") {
-      response = await Comment.findOne({
-        where: {
-          id: report.comment_id,
-        },
-        include: [
-          {
-            model: User,
-            as: "userss",
-            attributes: ["id", "username", "gender", "profile_picture","is_verified"],
+      response.setDataValue("type", 'ostia');
+      response.setDataValue("action", "Advertencia enviada");
+      return res.status(201).json(response);
+    } else {
+      console.log("CVI");
+      if (type === "post") {
+        response = await Post.findOne({
+          where: {
+            id: report.post_id,
           },
-        ],
-      });
-    } else if (type === "message") {
-      response = await Message.findOne({
-        where: {
-          id: report.message_id,
-          sender_id: report.reported_user_id,
-          receiver_id: report.reporter_id,
-        },
-        include: [
-          {
-            model: User,
-            as: "senderUserMessage",
-            attributes: ["id", "username", "gender", "profile_picture"],
+          include: [
+            {
+              model: User,
+              as: "post_user",
+              attributes: [
+                "id",
+                "username",
+                "gender",
+                "profile_picture",
+                "is_verified",
+              ],
+            },
+            {
+              model: UserPreference,
+              as: "post_user_preference",
+              include: [
+                {
+                  model: Topic,
+                  attributes: ["topic_name"],
+                },
+              ],
+              attributes: ["topic_id", "type"],
+            },
+            {
+              model: PostTag, // Include associated tags
+              as: "post_tagss",
+              include: [
+                {
+                  model: Tag,
+                  as: "post_tag_tag",
+                  attributes: ["id", "tag_name", "topic_id"],
+                },
+              ],
+              attributes: ["id"],
+            },
+          ],
+        });
+      } else if (type === "comment") {
+        response = await Comment.findOne({
+          where: {
+            id: report.comment_id,
           },
-        ],
-      });
-    } else if (type === "room") {
-      response = await VoiceRoom.findOne({
-        where: {
-          id: report.room_id,
-        },
-        include: [
-          {
-            model: Topic,
-            attributes: ["topic_name"],
+          include: [
+            {
+              model: User,
+              as: "userss",
+              attributes: [
+                "id",
+                "username",
+                "gender",
+                "profile_picture",
+                "is_verified",
+              ],
+            },
+          ],
+        });
+      } else if (type === "message") {
+        response = await Message.findOne({
+          where: {
+            id: report.message_id,
+            sender_id: report.reported_user_id,
+            receiver_id: report.reporter_id,
           },
-          {
-            model: VoiceRoomTag,
-            include: [
-              {
-                association: "voice_room_tag_to_tag",
-                model: Tag,
-                attributes: ["tag_name"],
-              },
-            ],
+          include: [
+            {
+              model: User,
+              as: "senderUserMessage",
+              attributes: ["id", "username", "gender", "profile_picture"],
+            },
+          ],
+        });
+      } else if (type === "room") {
+        response = await VoiceRoom.findOne({
+          where: {
+            id: report.room_id,
           },
-          {
-            model: User,
-            as: "host_user",
-            attributes: ["username", "profile_picture", "id"],
-          },
-        ],
-      });
+          include: [
+            {
+              model: Topic,
+              attributes: ["topic_name"],
+            },
+            {
+              model: VoiceRoomTag,
+              include: [
+                {
+                  association: "voice_room_tag_to_tag",
+                  model: Tag,
+                  attributes: ["tag_name"],
+                },
+              ],
+            },
+            {
+              model: User,
+              as: "host_user",
+              attributes: ["username", "profile_picture", "id"],
+            },
+          ],
+        });
+      }
     }
+
     response.setDataValue("type", type);
-    res.status(201).json(response);
+    return res.status(201).json(response);
   } catch (error) {
     console.log(error);
   }

@@ -12,6 +12,23 @@ import { UserHostRanking } from "../models/user_host_ranking.model.js";
 import { Op } from "sequelize";
 import { Message } from "../models/message.models.js";
 import { ModerationReport } from "../models/moderation_report.model.js";
+import { createMessage } from "../services/messages.services.js";
+export const sendWarning = async (req, res) => {
+  let {message, reported_user_id, id} = req.body;
+  try {
+    console.log(id);
+    await createMessage('dbb9d930-e338-40c2-9162-d7a04ab6851a', reported_user_id, message);
+    let report = await ModerationReport.findByPk(id);
+    await report.update({
+      result: "Advertencia enviada",
+      status: "resolved",
+    });
+    return res.status(201).json(true);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 
 export const verifyUser = async (req, res) => {
   let { user_id } = req.body;
@@ -363,6 +380,10 @@ export const getTopTopics = async (req, res) => {
   }
 };
 
+export const getTopTags = async (req, res) => {
+  
+}
+ 
 export const getTopTopicsRoom = async (req, res) => {
   try {
     const topicsRoom = await VoiceRoom.findAll({
