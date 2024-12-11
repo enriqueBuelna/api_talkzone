@@ -9,10 +9,12 @@ import { getUserPreferencess } from "../services/users.services.js";
 import { UserPreference } from "../models/user_preferences.model.js";
 import { Topic } from "../models/topic.models.js";
 import { UserHostRanking } from "../models/user_host_ranking.model.js";
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { Message } from "../models/message.models.js";
 import { ModerationReport } from "../models/moderation_report.model.js";
 import { createMessage } from "../services/messages.services.js";
+import { Tag } from "../models/tag.models.js";
+import { PostTag } from "../models/post_tag.model.js";
 export const sendWarning = async (req, res) => {
   let {message, reported_user_id, id} = req.body;
   try {
@@ -381,7 +383,28 @@ export const getTopTopics = async (req, res) => {
 };
 
 export const getTopTags = async (req, res) => {
-  
+  console.log('hola');
+  try {
+    const topTags = await PostTag.findAll({
+      include: [
+        {
+          association: 'post_tag_tag',
+          model: Tag,
+          attributes: ["id", "tag_name"],
+          include: [
+            {
+              model: Topic,
+              attributes: ['topic_name']
+            }
+          ]
+        }
+      ],
+      attributes: ['id']
+    });
+    return res.status(201).json(rankTags(topTags));
+  } catch (error) {
+    console.log(error);
+  }
 }
  
 export const getTopTopicsRoom = async (req, res) => {
@@ -447,3 +470,26 @@ export const getTopHosts = async (req, res) => {
     return res.status(500).json({ message: "Error fetching top hosts" });
   }
 };
+
+function rankTags(data) {
+  // Contenedor para contar las frecuencias
+  const frequencyMap = {};
+
+  // Contar frecuencias de los tags
+  data.forEach((item) => {
+    const tagName = item.post_tag_tag.tag_name;
+    const topicName = item.post_tag_tag.topic.topic_name;
+    const key = `${tagName}|${topicName}`;
+
+    if (!frequencyMap[key]) {
+      frequencyMap[key] = { tag_name: tagName, topic_name: topicName, count: 0 };
+    }
+    frequencyMap[key].count += 1;
+  });
+
+  // Convertir el objeto en un array y ordenarlo por frecuencia
+  const rankedTags = Object.values(frequencyMap).sort((a, b) => b.count - a.count);
+
+  // Retornar los 10 más frecuentes
+  return rankedTags.slice(0, 10);
+}
