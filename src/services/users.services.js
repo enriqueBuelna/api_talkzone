@@ -57,7 +57,7 @@ export const loginUserService = async ({ username, password }) => {
       username: user.username,
       user_role: user.user_role,
       is_profile_complete: user.is_profile_complete,
-      is_banned: user.is_banned
+      is_banned: user.is_banned,
     },
     process.env.SECRET_KEY,
     { expiresIn: "1h" }
@@ -205,7 +205,13 @@ export const getBasicInfoo = async (user_id) => {
   try {
     const user = await User.findOne({
       where: { id: user_id },
-      attributes: ["id", "username", "profile_picture", "gender", "is_verified"],
+      attributes: [
+        "id",
+        "username",
+        "profile_picture",
+        "gender",
+        "is_verified",
+      ],
     });
     return user;
   } catch (error) {
@@ -234,6 +240,13 @@ export const getUserPreferencess = async (userId) => {
           ],
           attributes: ["tag_id"],
         },
+        {
+          association: "user_preference_to_user",
+          model: User,
+          where: {
+            is_banned: false,
+          },
+        },
       ],
       attributes: ["id", "type", "topic_id"],
     });
@@ -253,7 +266,13 @@ export const getUserProileInformation = async (user_id) => {
   try {
     const user = await User.findOne({
       where: { id: user_id },
-      attributes: ["username", "profile_picture", "is_online", "gender", "is_verified"],
+      attributes: [
+        "username",
+        "profile_picture",
+        "is_online",
+        "gender",
+        "is_verified",
+      ],
       raw: true,
     });
     return user;
@@ -310,7 +329,7 @@ export const getCompleteProfilee = async (user_id) => {
         "gender",
         "about_me",
         "cover_picture",
-        "is_verified"
+        "is_verified",
       ],
       include: [
         {

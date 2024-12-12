@@ -151,6 +151,15 @@ const calculateCompatibility = async (user_id) => {
         ],
         is_active: true,
       },
+      include: [
+        {
+          association: 'user_preference_to_user',
+          model: User,
+          where: {
+            is_banned: false,
+          },
+        },
+      ],
 
       group: ["user_id"],
       raw: true,
@@ -290,15 +299,13 @@ const calculateCompatibilitySearch = async (user_id, idsPeople) => {
       attributes: ["followed_id"],
     });
     const followedId = followed.map((el) => el.followed_id);
-    let matchingUsers = idsPeople.filter(id => !followedId.includes(id));
+    let matchingUsers = idsPeople.filter((id) => !followedId.includes(id));
     let matchingUser = await Promise.all(
       matchingUsers.map(async (el) => {
-        const userPreferences = formatResponse(
-          await getUserPreferencess(el)
-        );
+        const userPreferences = formatResponse(await getUserPreferencess(el));
         el = {
-          user_id: el
-        }
+          user_id: el,
+        };
         return {
           ...el,
           userPreferences,

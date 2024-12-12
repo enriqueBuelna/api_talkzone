@@ -32,13 +32,12 @@ export const reportPostService = async (
     });
     return true;
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
 export const searchPostService = async (post_content, page, user_id) => {
   try {
-    console.log(post_content);
     let pageSize = 10;
     const offset = (page - 1) * pageSize;
 
@@ -49,6 +48,7 @@ export const searchPostService = async (post_content, page, user_id) => {
         visibility: "public",
       },
       attributes: ["id"], // Solo necesitamos los IDs por ahora
+      order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
     });
 
     // Buscar posts relacionados con usuarios
@@ -63,6 +63,7 @@ export const searchPostService = async (post_content, page, user_id) => {
         },
       ],
       attributes: ["id"],
+      order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
     });
 
     // Buscar posts relacionados con topics
@@ -89,6 +90,7 @@ export const searchPostService = async (post_content, page, user_id) => {
         user_preference_id: userPreferenceIds,
       },
       attributes: ["id"],
+      order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
     });
 
     // Buscar posts relacionados con tags
@@ -114,12 +116,13 @@ export const searchPostService = async (post_content, page, user_id) => {
       where: {
         id: postIds, // Filtrar por los IDs obtenidos
       },
+      order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
       attributes: ["id", "content", "media_url", "visibility"], // Atributos que quieras incluir
     });
-    console.log(postByContent.length, "CONTENT");
-    console.log(postByUser.length, "USUARIO");
-    console.log(postByTopic.length, "TOPIC");
-    console.log(postByTag.length, "TAG");
+    (postByContent.length, "CONTENT");
+    (postByUser.length, "USUARIO");
+    (postByTopic.length, "TOPIC");
+    (postByTag.length, "TAG");
     // Extraer IDs únicos de todas las búsquedas
     const postIDs = [
       ...new Set([
@@ -169,6 +172,7 @@ export const searchPostService = async (post_content, page, user_id) => {
           required: false,
         },
       ],
+      order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
       limit: pageSize,
       offset,
     });
@@ -186,7 +190,7 @@ export const searchPostService = async (post_content, page, user_id) => {
 
     return postsWithFilteredLikes;
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -282,7 +286,7 @@ export const getGroupPost = async (community_id, page, user_id) => {
 
     return postsWithFilteredLikes;
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -467,7 +471,7 @@ export const updatePostService = async (
   tags
 ) => {
   try {
-    console.log(tags);
+    (tags);
     // Buscar la publicación por ID
     const post = await Post.findByPk(id);
 
@@ -561,7 +565,7 @@ export const updatePostGroupService = async (
   media_url,
   visibility
 ) => {
-  console.log(visibility);
+  (visibility);
   try {
     const post = await Post.findByPk(id);
 
@@ -894,6 +898,7 @@ export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
           attributes: ["id"],
         },
       ],
+      order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
       limit: pageSize,
       offset: offset,
     });
@@ -910,7 +915,7 @@ export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
 
     return postsWithFilteredLikes;
   } catch (error) {
-    console.log(error);
+    (error);
     throw error;
   }
 };
@@ -977,6 +982,7 @@ export const getPostFriends = async (user_id) => {
           attributes: ["id"],
         },
       ],
+      order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
     });
     const postsWithFilteredLikes = matchingPost.map((post) => {
       const filteredLikes = post.post_liked.filter(
@@ -990,7 +996,7 @@ export const getPostFriends = async (user_id) => {
 
     return postsWithFilteredLikes;
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -1047,6 +1053,7 @@ export const getYourPost = async (user_id, page = 1, other_user_id) => {
             attributes: ["id"],
           },
         ],
+        order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
         limit: pageSize,
         offset: offset,
       });
@@ -1091,6 +1098,7 @@ export const getYourPost = async (user_id, page = 1, other_user_id) => {
             attributes: ["id"],
           },
         ],
+        order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
         limit: pageSize,
         offset: offset,
       });
@@ -1108,7 +1116,7 @@ export const getYourPost = async (user_id, page = 1, other_user_id) => {
 
     return postsWithFilteredLikes;
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -1123,7 +1131,7 @@ export const getLikePost = async (user_id, page = 1, pageSize = 10) => {
       raw: true, // Devuelve datos puros sin instancias de Sequelize
     });
     const postIds = likedPosts.map((like) => like.post_id);
-    console.log(postIds);
+    (postIds);
     const offset = (page - 1) * pageSize;
 
     const matchingPost = await Post.findAll({
@@ -1168,6 +1176,7 @@ export const getLikePost = async (user_id, page = 1, pageSize = 10) => {
           attributes: ["id"],
         },
       ],
+      order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
       limit: pageSize,
       offset: offset,
     });
@@ -1183,6 +1192,6 @@ export const getLikePost = async (user_id, page = 1, pageSize = 10) => {
 
     return postsWithFilteredLikes;
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
