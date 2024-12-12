@@ -302,7 +302,7 @@ export const getFollowersFollowedd = async (user_id) => {
 export const getCompleteProfilee = async (user_id) => {
   try {
     const user = await User.findOne({
-      where: { id: user_id },
+      where: { id: user_id, is_banned: false },
       attributes: [
         "id",
         "username",

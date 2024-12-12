@@ -600,6 +600,9 @@ export const getPostByIdService = async (postId, user_id) => {
           model: User,
           as: "post_user",
           attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+          where: {
+            is_banned:false
+          }
         },
         {
           model: UserPreference,
@@ -716,6 +719,9 @@ export const getPostFollowingService = async (id, page = 1, limit = 10) => {
       where: {
         user_id: ids, // Filtrar por los IDs de los usuarios que sigues
         visibility: "public", // Puedes ajustar la visibilidad según tus requerimientos
+        where: {
+          is_banned:false
+        }
       },
       order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
       limit: limit, // Limitar el número de resultados
@@ -847,6 +853,9 @@ export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
           model: User,
           as: "post_user",
           attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+          where: {
+            is_banned:false
+          }
         },
         {
           model: UserPreference,
@@ -934,6 +943,9 @@ export const getPostFriends = async (user_id) => {
           model: User,
           as: "post_user",
           attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+          where: {
+            is_banned:false
+          }
         },
         {
           model: UserPreference,
@@ -992,49 +1004,97 @@ export const getYourPost = async (user_id, page = 1, other_user_id) => {
     }
     let pageSize = 10;
     const offset = (page - 1) * pageSize;
-    const matchingPost = await Post.findAll({
-      where: {
-        user_id,
-      },
-      include: [
-        {
-          model: User,
-          as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+    let matchingPost;
+    if(other_user_id !== user_id){
+      matchingPost = await Post.findAll({
+        where: {
+          user_id,
+          visibility : 'public'
         },
-        {
-          model: UserPreference,
-          as: "post_user_preference",
-          include: [
-            {
-              model: Topic,
-              attributes: ["topic_name"],
-            },
-          ],
-          attributes: ["topic_id", "type"],
+        include: [
+          {
+            model: User,
+            as: "post_user",
+            attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+          },
+          {
+            model: UserPreference,
+            as: "post_user_preference",
+            include: [
+              {
+                model: Topic,
+                attributes: ["topic_name"],
+              },
+            ],
+            attributes: ["topic_id", "type"],
+          },
+          {
+            model: Like,
+            as: "post_liked",
+            attributes: ["id", "user_id"], // No uses la cláusula where aquí
+            required: false,
+          },
+          {
+            model: PostTag, // Incluir las etiquetas asociadas
+            as: "post_tagss",
+            include: [
+              {
+                model: Tag,
+                as: "post_tag_tag",
+                attributes: ["id", "tag_name", "topic_id"],
+              },
+            ],
+            attributes: ["id"],
+          },
+        ],
+        limit: pageSize,
+        offset: offset,
+      });
+    }else{
+      matchingPost = await Post.findAll({
+        where: {
+          user_id,
         },
-        {
-          model: Like,
-          as: "post_liked",
-          attributes: ["id", "user_id"], // No uses la cláusula where aquí
-          required: false,
-        },
-        {
-          model: PostTag, // Incluir las etiquetas asociadas
-          as: "post_tagss",
-          include: [
-            {
-              model: Tag,
-              as: "post_tag_tag",
-              attributes: ["id", "tag_name", "topic_id"],
-            },
-          ],
-          attributes: ["id"],
-        },
-      ],
-      limit: pageSize,
-      offset: offset,
-    });
+        include: [
+          {
+            model: User,
+            as: "post_user",
+            attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+          },
+          {
+            model: UserPreference,
+            as: "post_user_preference",
+            include: [
+              {
+                model: Topic,
+                attributes: ["topic_name"],
+              },
+            ],
+            attributes: ["topic_id", "type"],
+          },
+          {
+            model: Like,
+            as: "post_liked",
+            attributes: ["id", "user_id"], // No uses la cláusula where aquí
+            required: false,
+          },
+          {
+            model: PostTag, // Incluir las etiquetas asociadas
+            as: "post_tagss",
+            include: [
+              {
+                model: Tag,
+                as: "post_tag_tag",
+                attributes: ["id", "tag_name", "topic_id"],
+              },
+            ],
+            attributes: ["id"],
+          },
+        ],
+        limit: pageSize,
+        offset: offset,
+      });
+    }
 
     const postsWithFilteredLikes = matchingPost.map((post) => {
       const filteredLikes = post.post_liked.filter(
@@ -1070,6 +1130,7 @@ export const getLikePost = async (user_id, page = 1, pageSize = 10) => {
       where: {
         id: postIds,
         user_id: { [Op.ne]: user_id },
+        visibility: 'public'
       },
       include: [
         {
