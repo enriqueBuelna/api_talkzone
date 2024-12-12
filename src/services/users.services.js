@@ -20,7 +20,7 @@ export const registerUserService = async ({
   date_of_birth,
   gender,
 }) => {
-  console.log(username, email, password, date_of_birth, gender);
+  (username, email, password, date_of_birth, gender);
   if (!username || !password || !email || !date_of_birth || !gender) {
     throw new Error("Todos los campos son obligatorios");
   }
@@ -79,7 +79,7 @@ export const finishProfileService = async ({
   user_preferences_tag,
 }) => {
   try {
-    console.log(user_preferences);
+    (user_preferences);
     const user = await User.findByPk(user_id);
 
     if (!user) {
@@ -159,7 +159,7 @@ export const changeOnline = async (id, option) => {
       where: { id },
     });
 
-    console.log(user);
+    (user);
     // // Verificar si el usuario existe
     // if (!user) {
     //   throw new Error("Usuario no encontrado");
@@ -215,7 +215,7 @@ export const getBasicInfoo = async (user_id) => {
     });
     return user;
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -277,7 +277,7 @@ export const getUserProileInformation = async (user_id) => {
     });
     return user;
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -314,7 +314,7 @@ export const getFollowersFollowedd = async (user_id) => {
 
     return uniqueUsers;
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -366,7 +366,7 @@ export const getCompleteProfilee = async (user_id) => {
     user.setDataValue("followers", followers);
     return user;
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -387,6 +387,6 @@ export const editProfilee = async (
     await user.save();
     return user;
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };

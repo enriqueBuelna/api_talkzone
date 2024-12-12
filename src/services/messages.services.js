@@ -3,6 +3,7 @@ import { Op } from "sequelize";
 import { Chat } from "../models/chat.model.js";
 import { User } from "../models/user.model.js";
 import { getBasicInfoo } from "./users.services.js";
+import { ListInvites } from "../models/list_invites.model.js";
 
 export const readMessages = async (user_id, user_id_2) => {
   try {
@@ -51,14 +52,6 @@ export const createMessage = async (
   content,
   media_url
 ) => {
-  // Crear el mensaje
-  // const newMessage = await Message.create({
-  //   sender_id,
-  //   receiver_id,
-  //   content: content || null, // Permitir que el contenido sea opcional
-  //   media_url: media_url || null, // Permitir que la URL del medio sea opcional
-  // });
-
   // return newMessage;
   let noExisteChat = false;
   // Verifica si el chat existe
@@ -104,6 +97,50 @@ export const createMessage = async (
     userBasicInfo = await getBasicInfoo(receiver_id);
   }
   return [newMessage, chat, userBasicInfo, userBasicInfo2];
+};
+
+export const inviteVoiceRoom = async (sender_id, receiver_id, room_id) => {
+  // return newMessage;
+  let noExisteChat = false;
+  // Verifica si el chat existe
+  let chat = await Chat.findOne({
+    where: {
+      [Op.or]: [
+        { user1: sender_id, user2: receiver_id },
+        { user1: receiver_id, user2: sender_id },
+      ],
+    },
+  });
+
+  // Si no existe, crea uno nuevo
+  if (!chat) {
+    noExisteChat = true;
+    chat = await Chat.create({
+      user1: sender_id,
+      user2: receiver_id,
+      last_message: null, // se actualizará después
+    });
+  }
+
+  // Ahora tenemos el ID de chat, ya sea existente o recién creado
+  const chatId = chat.id;
+
+  // Inserta el mensaje con el chatId correspondiente
+  const newMessage = await Message.create({
+    sender_id,
+    receiver_id,
+    content: `Te invito a mi sala privada: ${room_id}`,
+    conversation_id: chatId, // Ahora se usa el ID de la conversación
+  });
+
+  // Actualiza el último mensaje en la tabla `Chat`
+  chat.last_message = newMessage.id;
+  await chat.save();
+
+  await ListInvites.create({
+    room_id,
+    user_id: receiver_id,
+  });
 };
 
 export const getMessagesBetweenUsers = async (sender_id, receiver_id) => {

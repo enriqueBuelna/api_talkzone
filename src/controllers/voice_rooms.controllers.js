@@ -1,5 +1,6 @@
 import { BlockedRoomUser } from "../models/blocked_room_user.model.js";
 import { VoiceRoom } from "../models/voice_rooms.models.js";
+import { ListInvites } from "../models/list_invites.model.js";
 import {
   createVoiceRoomService,
   getVoiceRoomByIdService,
@@ -7,8 +8,38 @@ import {
   closeVoiceRoom,
   verifyStatuss,
   addValorationRoom,
+  createVoiceRoomPrivateService,
 } from "../services/voice_room.service.js";
+import { inviteVoiceRoom } from "../services/messages.services.js";
 // Controlador para crear una sala de voz
+
+export const inviteMessageService = async (req, res) => {
+  const {sender_id, receiver_id, room_id} = req.body;
+  try {
+    let invite = await inviteVoiceRoom(sender_id, receiver_id, room_id);
+    return res.status(201).json(invite);
+  } catch (error) {
+    console.log(error);
+  } 
+}
+
+export const createVoiceRoomPrivate = async (req, res) => {
+  const { room_name, host_user_id, topic_id, type, tags } = req.body;
+  try {
+    const newVoiceRoom = await createVoiceRoomPrivateService(
+      room_name,
+      topic_id,
+      host_user_id,
+      type
+    );
+
+    return res.status(201).json(newVoiceRoom);
+  } catch (error) {
+    console.error("Error al crear la sala de voz:", error);
+    return res.status(500).json({ error: "Error al crear la sala de voz" });
+  }
+};
+
 export const createVoiceRoom = async (req, res) => {
   const { room_name, host_user_id, topic_id, type, tags } = req.body;
 
@@ -41,6 +72,21 @@ export const verifyStatus = async (req, res) => {
   const { room_id, user_id } = req.query;
   try {
     const result = await verifyStatuss(room_id);
+
+    if (result.is_private) {
+      let isThere = await ListInvites.findOne({
+        where: {
+          room_id,
+          user_id,
+        },
+      });
+
+      if(isThere === null){
+        let aux = 'no-invite';
+        return res.status(201).json(aux);
+      }
+    }
+
     if (result) {
       let aux = result.room_status === "closed" ? "closed" : "open";
       const result2 = await BlockedRoomUser.findOne({
@@ -126,10 +172,9 @@ export const getVoiceRoom = async (req, res) => {
 };
 
 export const getVoiceRoomById = async (req, res) => {
-  let { room_id } = req.params;
-  console.log(room_id);
+  let { room_id, user_id } = req.params;
   try {
-    let results = await getVoiceRoomByIdService(room_id);
+    let results = await getVoiceRoomByIdService(room_id, user_id);
     res.status(201).json(results);
   } catch (error) {
     console.error("Error al obtener la sala de voz:", error);

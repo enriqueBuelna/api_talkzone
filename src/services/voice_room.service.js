@@ -13,6 +13,7 @@ import { RoomRating } from "../models/room_rating.model.js";
 import { UserHostRanking } from "../models/user_host_ranking.model.js";
 import { RoomLog } from "../models/room_logs.model.js";
 import { Op } from "sequelize";
+import { ListInvites } from "../models/list_invites.model.js";
 export const verifyStatuss = async (room_id) => {
   try {
     const exists = await VoiceRoom.findByPk(room_id);
@@ -83,9 +84,99 @@ export const createVoiceRoomService = async (
   }
 };
 
-export const getVoiceRoomByIdService = async (room_id) => {
+export const createVoiceRoomPrivateService = async (
+  room_name,
+  topic_id,
+  host_user_id,
+  type
+) => {
   try {
-    let room = VoiceRoom.findAll({
+    const topic = Topic.findByPk(topic_id);
+    const host = User.findByPk(host_user_id);
+
+    if (!topic || !host) {
+      throw Error("Algo salio mal, no existe topic o host en la base de datos");
+    }
+
+    const voice_room = await VoiceRoom.create({
+      room_name,
+      topic_id,
+      host_user_id,
+      type,
+      is_private: true,
+    });
+    await VoiceRoomMember.create({
+      room_id: voice_room.id,
+      user_id: host_user_id,
+      joined_at: new Date(),
+      left_at: null,
+      type: "host",
+      in_stage: true,
+    });
+
+    await ListInvites.create({
+      room_id: voice_room.id,
+      user_id: host_user_id,
+    });
+
+    return voice_room;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getVoiceRoomByIdService = async (room_id, user_id) => {
+  try {
+    let is_private = await VoiceRoom.findByPk(room_id);
+
+    if (is_private) {
+      let isThere = await ListInvites.findOne({
+        where: {
+          room_id,
+          user_id,
+        },
+      });
+
+      if (isThere) {
+        let room = await VoiceRoom.findAll({
+          where: { id: room_id },
+          include: [
+            {
+              model: VoiceRoomMember,
+              include: [
+                {
+                  association: "voice_room_member_to_user",
+                  model: User,
+                  attributes: ["username", "profile_picture", "id"],
+                },
+              ],
+            },
+            {
+              model: Topic,
+              attributes: ["topic_name"],
+            },
+            {
+              model: VoiceRoomTag,
+              include: [
+                {
+                  association: "voice_room_tag_to_tag",
+                  model: Tag,
+                  attributes: ["tag_name"],
+                },
+              ],
+            },
+          ],
+        });
+        if (!room) {
+          throw Error("No existe esa sala");
+        }
+        return room;
+      } else {
+        throw Error("Sala privada");
+      }
+    }
+
+    let room = await VoiceRoom.findAll({
       where: { id: room_id },
       include: [
         {
@@ -121,72 +212,6 @@ export const getVoiceRoomByIdService = async (room_id) => {
   } catch (error) {}
 };
 
-// export const getVoiceRooms = async (user_id, filter) => {
-//   try {
-//     let topics_ids = await getUserPreferencess(user_id);
-//     topics_ids = topics_ids.map((item) => item.topic_id);
-//     let type = ["mentor", "entusiasta", "explorador"];
-
-//     if (filter) {
-//       if (filter.topicsId) {
-//         topics_ids = filter.topicsId;
-//       }
-//       if (filter.type) {
-//         type = filter.type;
-//       }
-//     }
-//     let rooms = await VoiceRoom.findAll({
-//       where: { topic_id: topics_ids, room_status: "active", type: type },
-//       include: [
-//         {
-//           model: VoiceRoomMember,
-//           include: [
-//             {
-//               association: "user_information_voice_room",
-//               model: User,
-//               attributes: ["username", "profile_picture", "id"],
-//             },
-//           ],
-//           attributes: ["id"],
-//           where: { left_at: null },
-//         },
-//         {
-//           model: Topic,
-//           attributes: ["topic_name"],
-//         },
-//         {
-//           model: VoiceRoomTag,
-//           include: [
-//             {
-//               association: "voice_room_tag_to_tag",
-//               model: Tag,
-//               attributes: ["tag_name"],
-//             },
-//           ],
-//           attributes: ["tag_id"],
-//         },
-//         {
-//           model: User,
-//           as: "host_user", 
-//           attributes: ["username", "profile_picture", "id"], 
-//           include: [
-//             {
-//               model: UserHostRanking,
-//               attributes: ["average_rating", "total_ratings"],
-//               as: "rating_",
-//             },
-//           ],
-//         },
-//       ],
-//       attributes: ["id", "room_name", "topic_id", "room_status"],
-//     });
-
-//     return rooms;
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
-
 export const getVoiceRooms = async (user_id, filter, page = 1, limit = 10) => {
   try {
     // Obtener los IDs de los temas del usuario
@@ -213,6 +238,7 @@ export const getVoiceRooms = async (user_id, filter, page = 1, limit = 10) => {
         topic_id: topics_ids,
         room_status: "active",
         type: type,
+        is_private: false,
       },
       include: [
         {
@@ -258,7 +284,12 @@ export const getVoiceRooms = async (user_id, filter, page = 1, limit = 10) => {
       attributes: ["id", "room_name", "topic_id", "room_status"],
       order: [
         // Ordenar por relación: host_user -> rating_ -> average_rating
-        [{ model: User, as: "host_user" }, { model: UserHostRanking, as: "rating_" }, "average_rating", "DESC"],
+        [
+          { model: User, as: "host_user" },
+          { model: UserHostRanking, as: "rating_" },
+          "average_rating",
+          "DESC",
+        ],
       ],
       limit, // Aplicar límite
       offset, // Aplicar desplazamiento

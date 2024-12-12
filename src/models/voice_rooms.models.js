@@ -53,6 +53,10 @@ export const VoiceRoom = sequelize.define(
       ),
       allowNull: false,
     },
+    is_private: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    }
   },
   {
     tableName: "Voice_rooms",
