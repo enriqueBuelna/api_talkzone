@@ -1015,7 +1015,8 @@ export const getYourPost = async (user_id, page = 1, other_user_id) => {
       matchingPost = await Post.findAll({
         where: {
           user_id,
-          visibility : 'public'
+          visibility : 'public',
+          community_id: null
         },
         include: [
           {
@@ -1061,6 +1062,8 @@ export const getYourPost = async (user_id, page = 1, other_user_id) => {
       matchingPost = await Post.findAll({
         where: {
           user_id,
+          community_id: null
+
         },
         include: [
           {
