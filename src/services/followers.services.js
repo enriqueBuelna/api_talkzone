@@ -44,6 +44,9 @@ export const getFollowers = async (user_id) => {
       include: [
         {
           model: User,
+          where: {
+            is_banned: false 
+          },
           as: "followers", // Asegúrate de que este alias coincida con tu definición de relación
           attributes: [
             "id",
@@ -88,6 +91,9 @@ export const getFollowing = async (id) => {
     include: [
       {
         model: User,
+        where: {
+          is_banned: false 
+        },
         as: "followed", // Asegúrate de que este alias coincida con tu definición de relación
         attributes: [
           "id",

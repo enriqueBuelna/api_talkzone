@@ -142,6 +142,9 @@ export const searchPostService = async (post_content, page, user_id) => {
         {
           model: User,
           as: "post_user",
+          where: {
+            is_banned: false 
+          },
           attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
         },
         {
@@ -207,6 +210,9 @@ export const getGroupPost = async (community_id, page, user_id) => {
       include: [
         {
           model: User,
+          where: {
+            is_banned: false 
+          },
           as: "post_user",
           attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
         },
@@ -1147,6 +1153,9 @@ export const getLikePost = async (user_id, page = 1, pageSize = 10) => {
         {
           model: User,
           as: "post_user",
+          where: {
+            is_banned: false 
+          },
           attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
         },
         {

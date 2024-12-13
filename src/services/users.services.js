@@ -147,7 +147,11 @@ export const sendEmailPasswordChangeService = async ({ email }) => {
 
 // Servicio para obtener todos los usuarios
 export const getAllUsersService = async () => {
-  const users = await User.findAll({ attributes: ["username"] });
+  const users = await User.findAll({ attributes: ["username"], 
+    where: {
+      is_banned: false
+    }
+   });
   return users;
 };
 
@@ -181,7 +185,7 @@ export const getUserOnline = async (id, option) => {
   try {
     // Buscar el usuario por su ID
     const user = await User.findOne({
-      where: { id },
+      where: { id, is_banned: false },
     });
 
     // Verificar si el usuario existe
@@ -204,7 +208,7 @@ export const getUserOnline = async (id, option) => {
 export const getBasicInfoo = async (user_id) => {
   try {
     const user = await User.findOne({
-      where: { id: user_id },
+      where: { id: user_id, is_banned: false },
       attributes: [
         "id",
         "username",
@@ -224,7 +228,7 @@ export const getBasicInfoo = async (user_id) => {
 export const getUserPreferencess = async (userId) => {
   try {
     const userPreferences = await UserPreference.findAll({
-      where: { user_id: userId, is_active: true },
+      where: { user_id: userId, is_active: true, },
       include: [
         {
           model: Topic, // Incluir el nombre del tema
@@ -265,7 +269,7 @@ export const getUserPreferencess = async (userId) => {
 export const getUserProileInformation = async (user_id) => {
   try {
     const user = await User.findOne({
-      where: { id: user_id },
+      where: { id: user_id, is_banned: false },
       attributes: [
         "username",
         "profile_picture",
@@ -274,6 +278,7 @@ export const getUserProileInformation = async (user_id) => {
         "is_verified",
       ],
       raw: true,
+      
     });
     return user;
   } catch (error) {
@@ -303,6 +308,9 @@ export const getFollowersFollowedd = async (user_id) => {
       ],
       attributes: ["id", "username", "profile_picture", "is_online", "gender"],
       raw: true,
+      where: {
+        is_banned: false
+      }
     });
 
     // Filtrar usuarios únicos

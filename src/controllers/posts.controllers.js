@@ -69,6 +69,7 @@ export const createPost = async (req, res) => {
   } = req.body;
 
   try {
+    console.log(user_id, content, visibility, user_preference_id)
     const newPost = await createPostService(
       user_id,
       content,
