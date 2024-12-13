@@ -129,7 +129,7 @@ export const inviteVoiceRoom = async (sender_id, receiver_id, room_id) => {
   const newMessage = await Message.create({
     sender_id,
     receiver_id,
-    content: `Te invito a mi sala privada: ${room_id}`,
+    content: `Te invito a mi sala , ven rapido, no te la puedes perder: ${room_id}`,
     conversation_id: chatId, // Ahora se usa el ID de la conversación
   });
 

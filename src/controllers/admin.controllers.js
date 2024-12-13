@@ -18,7 +18,7 @@ import { PostTag } from "../models/post_tag.model.js";
 export const sendWarning = async (req, res) => {
   let {message, reported_user_id, id} = req.body;
   try {
-    console.log(id);
+    (id);
     await createMessage('dbb9d930-e338-40c2-9162-d7a04ab6851a', reported_user_id, message);
     let report = await ModerationReport.findByPk(id);
     await report.update({
@@ -27,14 +27,14 @@ export const sendWarning = async (req, res) => {
     });
     return res.status(201).json(true);
   } catch (error) {
-    console.log(error);
+    (error);
   }
 }
 
 
 export const verifyUser = async (req, res) => {
   let { user_id } = req.body;
-  console.log(user_id);
+  (user_id);
   try {
     let user = await User.findByPk(user_id);
     await user.update({
@@ -42,7 +42,7 @@ export const verifyUser = async (req, res) => {
     });
     res.status(201).json(true);
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -135,7 +135,7 @@ export const getDetailUser = async (req, res) => {
     };
     res.status(201).json(response);
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -166,7 +166,7 @@ export const deleteContent = async (req, res) => {
     });
     res.status(201).json(true);
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -189,7 +189,7 @@ export const getMostFollowed = async (req, res) => {
     });
     res.status(201).json(users);
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -209,7 +209,7 @@ export const getPrincipalStats = async (req, res) => {
 
     res.status(201).json(response);
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -223,7 +223,7 @@ export const getAllUsers = async (req, res) => {
     });
     res.status(201).json(users);
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -331,7 +331,7 @@ export const getStatsCurious = async (req, res) => {
 
     res.status(201).json(response);
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 
@@ -383,7 +383,7 @@ export const getTopTopics = async (req, res) => {
 };
 
 export const getTopTags = async (req, res) => {
-  console.log('hola');
+  ('hola');
   try {
     const topTags = await PostTag.findAll({
       include: [
@@ -403,7 +403,7 @@ export const getTopTags = async (req, res) => {
     });
     return res.status(201).json(rankTags(topTags));
   } catch (error) {
-    console.log(error);
+    (error);
   }
 }
  
@@ -421,7 +421,7 @@ export const getTopTopicsRoom = async (req, res) => {
     // Agrupar por topic_id y contar las ocurrencias
     const topicCounts = topicsRoom.reduce((acc, room) => {
       const topic = room.topic; // Acceder al tema relacionado
-      console.log(topic);
+      (topic);
       if (topic) {
         const { id: topicId, topic_name: topicName } = topic;
         acc[topicId] = acc[topicId] || { topicId, topicName, count: 0 };
@@ -441,7 +441,7 @@ export const getTopTopicsRoom = async (req, res) => {
     // Responder con el resultado
     return res.status(200).json(top5Topics);
   } catch (error) {
-    console.log(error);
+    (error);
   }
 };
 

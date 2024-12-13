@@ -30,6 +30,7 @@ export const searchConnect = async (req, res) => {
 
 const getIdsPeople = async (search, user_id) => {
   try {
+    let userId = [user_id, 'dbb9d930-e338-40c2-9162-d7a04ab685d5', 'dbb9d930-e338-40c2-9162-d7a04ab6851a']
     const uniqueUserIds = new Set(); // Un conjunto para almacenar los user_id únicos
     const tags = await UserPreferenceTag.findAll({
       include: [
@@ -55,11 +56,11 @@ const getIdsPeople = async (search, user_id) => {
     const users = await User.findAll({
       where: {
         username: { [Op.like]: `%${search}%` },
-        id: { [Op.ne]: user_id }, // Diferente al usuario actual
+        id: { [Op.notIn]: userId  }, // Diferente al usuario actual
       },
     });
     ///aqui extraer el user_id
-    users.forEach((user) => uniqueUserIds.add(user.user_id));
+    users.forEach((user) => uniqueUserIds.add(user.id));
     const topics = await UserPreference.findAll({
       where: {
         user_id: { [Op.ne]: user_id }, // Diferente al usuario actual
@@ -79,6 +80,7 @@ const getIdsPeople = async (search, user_id) => {
 
     // Convertir el conjunto a un arreglo si lo necesitas en este formato
     const uniqueUserIdArray = Array.from(uniqueUserIds);
+    console.log(uniqueUserIdArray);
     return uniqueUserIdArray;
   } catch (error) {
     console.log(error);
@@ -111,7 +113,7 @@ export const auxiliarMatchmakingSearch = async (user_id, idsPeople) => {
   try {
     let usuarios = await calculateCompatibilitySearch(user_id, idsPeople);
     //arreglo
-
+    console.log(usuarios);
     let usuariosConPreferencias = await Promise.all(
       usuarios.map(async (el) => {
         // Obtener las preferencias del usuario y añadirlas al objeto

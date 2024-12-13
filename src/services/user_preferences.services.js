@@ -21,6 +21,7 @@ export const createUserPreference = async (user_id, topic_id, type, tagss) => {
   if (existingPreference) {
     if (!existingPreference.is_active) {
       await existingPreference.update({
+        type,
         is_active: true,
       });
 

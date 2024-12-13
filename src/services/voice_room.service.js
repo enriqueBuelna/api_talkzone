@@ -591,6 +591,7 @@ const existsValorationMe = async (user_id, room_id, host_user_id) => {
 
 export const addValorationRoom = async (room_id, rating, user_id) => {
   try {
+    console.log(rating);
     // Encontrar la sala y obtener al host
     let host = await VoiceRoom.findOne({
       where: { id: room_id },
@@ -636,16 +637,24 @@ export const addValorationRoom = async (room_id, rating, user_id) => {
         total_ratings: 1,
       });
     } else {
-      // Actualizar total_ratings y recalcular el average_rating
-      const newTotalRatings = userHostRanking.total_ratings + 1;
-      const newAverageRating =
-        (userHostRanking.average_rating * userHostRanking.total_ratings +
-          rating) /
-        newTotalRatings;
+      // Asegúrate de que los valores existentes sean válidos
+      const currentTotalRatings =
+        parseInt(userHostRanking.total_ratings, 10) || 0;
+      const currentAverageRating =
+        parseFloat(userHostRanking.average_rating) || 0;
 
+      // Actualizar total_ratings y recalcular average_rating
+      const newTotalRatings = currentTotalRatings + 1;
+      const newAverageRating =
+        (currentAverageRating * currentTotalRatings + rating) / newTotalRatings;
+
+      // Redondear el promedio a dos decimales (opcional)
+      const roundedAverageRating = parseInt(newAverageRating);
+
+      // Actualizar en la base de datos
       await userHostRanking.update({
         total_ratings: newTotalRatings,
-        average_rating: newAverageRating,
+        average_rating: roundedAverageRating,
       });
     }
 

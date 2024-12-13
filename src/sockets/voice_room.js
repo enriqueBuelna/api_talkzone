@@ -119,7 +119,15 @@ export const voiceRoomSocket = (socket, io) => {
         user_id: payload.user_id,
       });
     }
-    io.to(payload.room_id).emit("userLeft", payload.user_id);
+    let yes = false;
+    if(deleted !== undefined){
+      yes = true;
+    }
+    let response = {
+      user_id: payload.user_id, 
+      is_remove: yes
+    }
+    io.to(payload.room_id).emit("userLeft", response);
     if (roomHosts[payload.room_id] === payload.user_id) {
       await closeVoiceRoom(payload.room_id);
       io.to(payload.room_id).emit("voiceRoomClosed", "cerrado");

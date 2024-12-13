@@ -46,6 +46,7 @@ export const searchPostService = async (post_content, page, user_id) => {
       where: {
         content: { [Op.like]: `%${post_content}%` },
         visibility: "public",
+        community_id: null
       },
       attributes: ["id"], // Solo necesitamos los IDs por ahora
       order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
@@ -60,12 +61,13 @@ export const searchPostService = async (post_content, page, user_id) => {
           where: {
             username: { [Op.like]: `%${post_content}%` },
           },
+        community_id: null
+
         },
       ],
       attributes: ["id"],
       order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
     });
-
     // Buscar posts relacionados con topics
     // Obtener primero los IDs relacionados
     const matchingUserPreferences = await UserPreference.findAll({
@@ -88,6 +90,8 @@ export const searchPostService = async (post_content, page, user_id) => {
     const postByTopic = await Post.findAll({
       where: {
         user_preference_id: userPreferenceIds,
+        community_id: null
+
       },
       attributes: ["id"],
       order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
@@ -115,6 +119,8 @@ export const searchPostService = async (post_content, page, user_id) => {
     const postByTag = await Post.findAll({
       where: {
         id: postIds, // Filtrar por los IDs obtenidos
+        community_id: null
+
       },
       order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
       attributes: ["id", "content", "media_url", "visibility"], // Atributos que quieras incluir
@@ -137,6 +143,8 @@ export const searchPostService = async (post_content, page, user_id) => {
     const finalPosts = await Post.findAll({
       where: {
         id: postIDs,
+        community_id: null
+
       },
       include: [
         {
@@ -193,7 +201,7 @@ export const searchPostService = async (post_content, page, user_id) => {
 
     return postsWithFilteredLikes;
   } catch (error) {
-    (error);
+    console.log(error);
   }
 };
 
