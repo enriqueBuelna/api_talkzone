@@ -14,9 +14,11 @@ import { UserHostRanking } from "../models/user_host_ranking.model.js";
 import { RoomLog } from "../models/room_logs.model.js";
 import { Op } from "sequelize";
 import { ListInvites } from "../models/list_invites.model.js";
+import { BlockedUsers } from "../models/blocked_users.model.js";
 export const verifyStatuss = async (room_id) => {
   try {
     const exists = await VoiceRoom.findByPk(room_id);
+    
     return exists;
   } catch (error) {
     console.log(error);
@@ -127,8 +129,17 @@ export const createVoiceRoomPrivateService = async (
 
 export const getVoiceRoomByIdService = async (room_id, user_id) => {
   try {
-    let is_private = await VoiceRoom.findByPk(room_id);
+    console.log("HOLA");
+    // let blockedUserIds = await userBlockByMe(user_id);
+    // console.log(blockedUserIds, user_id);
+    // let is_private = await VoiceRoom.findByPk(room_id);
 
+    // blockedUserIds.forEach(el => {
+    //   console.log(el, is_private.host_user_id);
+    //   if(el == is_private.host_user_id){
+    //     throw Error("No existe esa sala");
+    //   }
+    // })
     if (is_private) {
       let isThere = await ListInvites.findOne({
         where: {
@@ -209,7 +220,9 @@ export const getVoiceRoomByIdService = async (room_id, user_id) => {
       throw Error("No existe esa sala");
     }
     return room;
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const getVoiceRooms = async (user_id, filter, page = 1, limit = 10) => {
@@ -228,10 +241,10 @@ export const getVoiceRooms = async (user_id, filter, page = 1, limit = 10) => {
         type = filter.type;
       }
     }
-
+    
     // Parámetros de paginación (default page=1, limit=10)
     const offset = (page - 1) * limit;
-
+    let blockedUserIds = await userBlockByMe(user_id);
     // Buscar salas con paginación y orden
     const rooms = await VoiceRoom.findAll({
       where: {
@@ -239,6 +252,7 @@ export const getVoiceRooms = async (user_id, filter, page = 1, limit = 10) => {
         room_status: "active",
         type: type,
         is_private: false,
+        host_user_id: { [Op.notIn]: blockedUserIds },
       },
       include: [
         {
@@ -464,13 +478,11 @@ export const userLeft = async (room_id, user_id, roomLogId) => {
         left_at: new Date(),
       });
     }
-    console.log("azaaaaaaaaaaaaa");
     // Actualizamos el campo left_at con la hora de salida
     await member.update({
       left_at: new Date(),
       in_stage: false,
     });
-    console.log("LLEGO AQUI");
   } catch (error) {
     console.log(error);
   }
@@ -685,4 +697,22 @@ async function getUserTotalTimeInRooms(user_id, room_id) {
   });
 
   return totalTimeInMinutes;
+}
+
+const userBlockByMe = async (user_id) => {
+  const blockedByMe = await BlockedUsers.findAll({
+    where: { blocker_user_id: user_id },
+    attributes: ["blocked_user_id"],
+  });
+  const blockedMe = await BlockedUsers.findAll({
+    where: { blocked_user_id: user_id },
+    attributes: ["blocker_user_id"],
+  });
+  
+  // Listas de usuarios bloqueados en ambas direcciones
+  const blockedByMeIds = blockedByMe.map((entry) => entry.blocked_user_id);
+  const blockedMeIds = blockedMe.map((entry) => entry.blocker_user_id);
+  
+  // Combina ambas listas de usuarios bloqueados
+  return [...new Set([...blockedByMeIds, ...blockedMeIds])];
 }

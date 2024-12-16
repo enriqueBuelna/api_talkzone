@@ -12,6 +12,7 @@ import { sendCodeEmailService } from "./email.services.js";
 import { Follower } from "../models/follower.model.js";
 import Op from "sequelize";
 import { getFollowers, getFollowing } from "./followers.services.js";
+import { BlockedUsers } from "../models/blocked_users.model.js";
 // Servicio para registrar un usuario
 export const registerUserService = async ({
   username,
@@ -326,8 +327,19 @@ export const getFollowersFollowedd = async (user_id) => {
   }
 };
 
-export const getCompleteProfilee = async (user_id) => {
+export const getCompleteProfilee = async (user_id, myUserId) => {
   try {
+    console.log(user_id, myUserId);
+    if(user_id !== myUserId){
+      let users = await userBlockByMe(myUserId);
+      if(users){
+        for (const el of users) {
+          if (el == user_id) {
+            throw new Error('uwu');
+          }
+        }
+      }
+    }
     const user = await User.findOne({
       where: { id: user_id, is_banned: false },
       attributes: [
@@ -398,3 +410,21 @@ export const editProfilee = async (
     (error);
   }
 };
+
+const userBlockByMe = async (user_id) => {
+  const blockedByMe = await BlockedUsers.findAll({
+    where: { blocker_user_id: user_id },
+    attributes: ["blocked_user_id"],
+  });
+  const blockedMe = await BlockedUsers.findAll({
+    where: { blocked_user_id: user_id },
+    attributes: ["blocker_user_id"],
+  });
+  
+  // Listas de usuarios bloqueados en ambas direcciones
+  const blockedByMeIds = blockedByMe.map((entry) => entry.blocked_user_id);
+  const blockedMeIds = blockedMe.map((entry) => entry.blocker_user_id);
+  
+  // Combina ambas listas de usuarios bloqueados
+  return [...new Set([...blockedByMeIds, ...blockedMeIds])];
+}

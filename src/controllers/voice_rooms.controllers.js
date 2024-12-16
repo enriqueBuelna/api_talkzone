@@ -11,17 +11,18 @@ import {
   createVoiceRoomPrivateService,
 } from "../services/voice_room.service.js";
 import { inviteVoiceRoom } from "../services/messages.services.js";
+import { BlockedUsers } from "../models/blocked_users.model.js";
 // Controlador para crear una sala de voz
 
 export const inviteMessageService = async (req, res) => {
-  const {sender_id, receiver_id, room_id} = req.body;
+  const { sender_id, receiver_id, room_id } = req.body;
   try {
     let invite = await inviteVoiceRoom(sender_id, receiver_id, room_id);
     return res.status(201).json(invite);
   } catch (error) {
     console.log(error);
-  } 
-}
+  }
+};
 
 export const createVoiceRoomPrivate = async (req, res) => {
   const { room_name, host_user_id, topic_id, type, tags } = req.body;
@@ -72,7 +73,13 @@ export const verifyStatus = async (req, res) => {
   const { room_id, user_id } = req.query;
   try {
     const result = await verifyStatuss(room_id);
+    let blockedUserIds = await userBlockByMe(user_id);
 
+    for (const el of blockedUserIds) {
+      if (el == result.host_user_id) {
+        return res.status(201).json('no-invite');
+      }
+    }
     if (result.is_private) {
       let isThere = await ListInvites.findOne({
         where: {
@@ -81,8 +88,8 @@ export const verifyStatus = async (req, res) => {
         },
       });
 
-      if(isThere === null){
-        let aux = 'no-invite';
+      if (isThere === null) {
+        let aux = "no-invite";
         return res.status(201).json(aux);
       }
     }
@@ -230,3 +237,21 @@ export const closeVoiceRoomm = async (req, res) => {
     console.log("A");
   }
 };
+
+const userBlockByMe = async (user_id) => {
+  const blockedByMe = await BlockedUsers.findAll({
+    where: { blocker_user_id: user_id },
+    attributes: ["blocked_user_id"],
+  });
+  const blockedMe = await BlockedUsers.findAll({
+    where: { blocked_user_id: user_id },
+    attributes: ["blocker_user_id"],
+  });
+  
+  // Listas de usuarios bloqueados en ambas direcciones
+  const blockedByMeIds = blockedByMe.map((entry) => entry.blocked_user_id);
+  const blockedMeIds = blockedMe.map((entry) => entry.blocker_user_id);
+  
+  // Combina ambas listas de usuarios bloqueados
+  return [...new Set([...blockedByMeIds, ...blockedMeIds])];
+}

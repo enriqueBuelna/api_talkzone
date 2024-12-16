@@ -28,6 +28,7 @@ import userPreferencesTag from "./routes/user_preferences_tags.routes.js";
 import matchmakingConnect from "./routes/mm_user_connect.routes.js";
 import vrMembersRoutes from "./routes/voice_room_member.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import { BlockedUsers } from "./models/blocked_users.model.js";
 // import emailVerify from "./routes/verification_email.routes.js";
 // import indexRoutes from "./routes/index.routes.js";
 

@@ -16,10 +16,21 @@ import { createMessage } from "../services/messages.services.js";
 import { Tag } from "../models/tag.models.js";
 import { PostTag } from "../models/post_tag.model.js";
 export const sendWarning = async (req, res) => {
-  let {message, reported_user_id, id} = req.body;
+  let { message, reported_user_id, id } = req.body;
   try {
-    (id);
-    await createMessage('dbb9d930-e338-40c2-9162-d7a04ab6851a', reported_user_id, message);
+    if(id === ''){
+      await createMessage(
+        "dbb9d930-e338-40c2-9162-d7a04ab6851a",
+        reported_user_id,
+        message
+      );
+      return res.status(201).json(true);;
+    }
+    await createMessage(
+      "dbb9d930-e338-40c2-9162-d7a04ab6851a",
+      reported_user_id,
+      message
+    );
     let report = await ModerationReport.findByPk(id);
     await report.update({
       result: "Advertencia enviada",
@@ -27,14 +38,13 @@ export const sendWarning = async (req, res) => {
     });
     return res.status(201).json(true);
   } catch (error) {
-    (error);
+    error;
   }
-}
-
+};
 
 export const verifyUser = async (req, res) => {
   let { user_id } = req.body;
-  (user_id);
+  user_id;
   try {
     let user = await User.findByPk(user_id);
     await user.update({
@@ -42,7 +52,7 @@ export const verifyUser = async (req, res) => {
     });
     res.status(201).json(true);
   } catch (error) {
-    (error);
+    error;
   }
 };
 
@@ -135,7 +145,7 @@ export const getDetailUser = async (req, res) => {
     };
     res.status(201).json(response);
   } catch (error) {
-    (error);
+    error;
   }
 };
 
@@ -166,7 +176,7 @@ export const deleteContent = async (req, res) => {
     });
     res.status(201).json(true);
   } catch (error) {
-    (error);
+    error;
   }
 };
 
@@ -189,7 +199,7 @@ export const getMostFollowed = async (req, res) => {
     });
     res.status(201).json(users);
   } catch (error) {
-    (error);
+    error;
   }
 };
 
@@ -209,7 +219,7 @@ export const getPrincipalStats = async (req, res) => {
 
     res.status(201).json(response);
   } catch (error) {
-    (error);
+    error;
   }
 };
 
@@ -223,7 +233,7 @@ export const getAllUsers = async (req, res) => {
     });
     res.status(201).json(users);
   } catch (error) {
-    (error);
+    error;
   }
 };
 
@@ -331,7 +341,7 @@ export const getStatsCurious = async (req, res) => {
 
     res.status(201).json(response);
   } catch (error) {
-    (error);
+    error;
   }
 };
 
@@ -383,30 +393,30 @@ export const getTopTopics = async (req, res) => {
 };
 
 export const getTopTags = async (req, res) => {
-  ('hola');
+  ("hola");
   try {
     const topTags = await PostTag.findAll({
       include: [
         {
-          association: 'post_tag_tag',
+          association: "post_tag_tag",
           model: Tag,
           attributes: ["id", "tag_name"],
           include: [
             {
               model: Topic,
-              attributes: ['topic_name']
-            }
-          ]
-        }
+              attributes: ["topic_name"],
+            },
+          ],
+        },
       ],
-      attributes: ['id']
+      attributes: ["id"],
     });
     return res.status(201).json(rankTags(topTags));
   } catch (error) {
-    (error);
+    error;
   }
-}
- 
+};
+
 export const getTopTopicsRoom = async (req, res) => {
   try {
     const topicsRoom = await VoiceRoom.findAll({
@@ -421,7 +431,7 @@ export const getTopTopicsRoom = async (req, res) => {
     // Agrupar por topic_id y contar las ocurrencias
     const topicCounts = topicsRoom.reduce((acc, room) => {
       const topic = room.topic; // Acceder al tema relacionado
-      (topic);
+      topic;
       if (topic) {
         const { id: topicId, topic_name: topicName } = topic;
         acc[topicId] = acc[topicId] || { topicId, topicName, count: 0 };
@@ -441,7 +451,7 @@ export const getTopTopicsRoom = async (req, res) => {
     // Responder con el resultado
     return res.status(200).json(top5Topics);
   } catch (error) {
-    (error);
+    error;
   }
 };
 
@@ -452,7 +462,13 @@ export const getTopHosts = async (req, res) => {
       include: [
         {
           model: User,
-          attributes: ["id", "username", "profile_picture", "gender", "is_verified"], // Ajusta los atributos según tu modelo de User
+          attributes: [
+            "id",
+            "username",
+            "profile_picture",
+            "gender",
+            "is_verified",
+          ], // Ajusta los atributos según tu modelo de User
         },
       ],
       attributes: ["average_rating", "total_ratings"],
@@ -482,13 +498,19 @@ function rankTags(data) {
     const key = `${tagName}|${topicName}`;
 
     if (!frequencyMap[key]) {
-      frequencyMap[key] = { tag_name: tagName, topic_name: topicName, count: 0 };
+      frequencyMap[key] = {
+        tag_name: tagName,
+        topic_name: topicName,
+        count: 0,
+      };
     }
     frequencyMap[key].count += 1;
   });
 
   // Convertir el objeto en un array y ordenarlo por frecuencia
-  const rankedTags = Object.values(frequencyMap).sort((a, b) => b.count - a.count);
+  const rankedTags = Object.values(frequencyMap).sort(
+    (a, b) => b.count - a.count
+  );
 
   // Retornar los 10 más frecuentes
   return rankedTags.slice(0, 10);

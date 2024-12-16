@@ -19,8 +19,8 @@ import {
 const router = Router();
 
 router.post("/posts/newPost", createPost);
-router.get("/posts/getFollowingPost/:id", getPostFollowing);
-router.get("/posts/getRelevantPost/:id", getRelevantPosts);
+// router.get("/posts/getFollowingPost/:id", getPostFollowing);
+// router.get("/posts/getRelevantPost/:id", getRelevantPosts);
 router.get("/posts/getPostById", getPostById);
 router.get("/posts/getForYou", getAllPost);
 router.get("/posts/getPostFriends", getFriendsPost);

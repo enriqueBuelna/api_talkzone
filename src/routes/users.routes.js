@@ -12,7 +12,10 @@ import {
   getCompleteProfile,
   editProfile,
   completeProfile,
-  amFollowing
+  amFollowing,
+  blockUser,
+  getBlockUsers,
+  unblockUser
 } from "../controllers/users.controllers.js";
 import {
   authenticateToken,
@@ -45,4 +48,7 @@ router.get("/users/getBasicInfo", getBasicInfo);
 router.get("/users/getCompleteProfile", getCompleteProfile);
 router.post("/users/editProfile", editProfile);
 router.post("/users/amFollowing", amFollowing);
+router.post("/users/blockUser", blockUser);
+router.get("/users/getBlockedUser", getBlockUsers);
+router.post("/users/unblockUser", unblockUser);
 export default router;

@@ -15,6 +15,7 @@ import { Like } from "../models/like.model.js";
 import { json, Op, Sequelize } from "sequelize";
 import { Community } from "../models/communitie.model.js";
 import { ModerationReport } from "../models/moderation_report.model.js";
+import { BlockedUsers } from "../models/blocked_users.model.js";
 export const reportPostService = async (
   reason,
   details,
@@ -32,12 +33,14 @@ export const reportPostService = async (
     });
     return true;
   } catch (error) {
-    (error);
+    error;
   }
 };
 
 export const searchPostService = async (post_content, page, user_id) => {
   try {
+    let blockedUserIds = await userBlockByMe(user_id);
+    blockedUserIds.push(user_id);
     let pageSize = 10;
     const offset = (page - 1) * pageSize;
 
@@ -46,7 +49,8 @@ export const searchPostService = async (post_content, page, user_id) => {
       where: {
         content: { [Op.like]: `%${post_content}%` },
         visibility: "public",
-        community_id: null
+        community_id: null,
+        user_id: { [Op.notIn]: blockedUserIds },
       },
       attributes: ["id"], // Solo necesitamos los IDs por ahora
       order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
@@ -54,6 +58,9 @@ export const searchPostService = async (post_content, page, user_id) => {
 
     // Buscar posts relacionados con usuarios
     const postByUser = await Post.findAll({
+      where: {
+        user_id: { [Op.notIn]: blockedUserIds },
+      },
       include: [
         {
           model: User,
@@ -61,8 +68,7 @@ export const searchPostService = async (post_content, page, user_id) => {
           where: {
             username: { [Op.like]: `%${post_content}%` },
           },
-        community_id: null
-
+          community_id: null,
         },
       ],
       attributes: ["id"],
@@ -90,8 +96,7 @@ export const searchPostService = async (post_content, page, user_id) => {
     const postByTopic = await Post.findAll({
       where: {
         user_preference_id: userPreferenceIds,
-        community_id: null
-
+        community_id: null,
       },
       attributes: ["id"],
       order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
@@ -119,16 +124,15 @@ export const searchPostService = async (post_content, page, user_id) => {
     const postByTag = await Post.findAll({
       where: {
         id: postIds, // Filtrar por los IDs obtenidos
-        community_id: null
-
+        community_id: null,
       },
       order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
       attributes: ["id", "content", "media_url", "visibility"], // Atributos que quieras incluir
     });
-    (postByContent.length, "CONTENT");
-    (postByUser.length, "USUARIO");
-    (postByTopic.length, "TOPIC");
-    (postByTag.length, "TAG");
+    postByContent.length, "CONTENT";
+    postByUser.length, "USUARIO";
+    postByTopic.length, "TOPIC";
+    postByTag.length, "TAG";
     // Extraer IDs únicos de todas las búsquedas
     const postIDs = [
       ...new Set([
@@ -143,17 +147,23 @@ export const searchPostService = async (post_content, page, user_id) => {
     const finalPosts = await Post.findAll({
       where: {
         id: postIDs,
-        community_id: null
-
+        community_id: null,
+        user_id: { [Op.notIn]: blockedUserIds },
       },
       include: [
         {
           model: User,
           as: "post_user",
           where: {
-            is_banned: false 
+            is_banned: false,
           },
-          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+          attributes: [
+            "id",
+            "username",
+            "gender",
+            "profile_picture",
+            "is_verified",
+          ],
         },
         {
           model: UserPreference,
@@ -219,10 +229,16 @@ export const getGroupPost = async (community_id, page, user_id) => {
         {
           model: User,
           where: {
-            is_banned: false 
+            is_banned: false,
           },
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+          attributes: [
+            "id",
+            "username",
+            "gender",
+            "profile_picture",
+            "is_verified",
+          ],
         },
         {
           model: UserPreference,
@@ -254,6 +270,7 @@ export const getGroupPost = async (community_id, page, user_id) => {
           attributes: ["id"],
         },
       ],
+      order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
       limit: pageSize,
       offset: offset,
     });
@@ -300,7 +317,7 @@ export const getGroupPost = async (community_id, page, user_id) => {
 
     return postsWithFilteredLikes;
   } catch (error) {
-    (error);
+    error;
   }
 };
 
@@ -430,7 +447,13 @@ export const createPostService = async (
         {
           model: User,
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+          attributes: [
+            "id",
+            "username",
+            "gender",
+            "profile_picture",
+            "is_verified",
+          ],
         },
         {
           model: UserPreference,
@@ -485,7 +508,7 @@ export const updatePostService = async (
   tags
 ) => {
   try {
-    (tags);
+    tags;
     // Buscar la publicación por ID
     const post = await Post.findByPk(id);
 
@@ -579,7 +602,7 @@ export const updatePostGroupService = async (
   media_url,
   visibility
 ) => {
-  (visibility);
+  visibility;
   try {
     const post = await Post.findByPk(id);
 
@@ -605,9 +628,11 @@ export const updatePostGroupService = async (
 
 export const getPostByIdService = async (postId, user_id) => {
   try {
+    let blockedUserIds = await userBlockByMe(user_id);
     const matchingPost = await Post.findOne({
       where: {
         id: postId,
+        user_id: { [Op.notIn]: blockedUserIds },
         [Op.or]: [
           { visibility: "public" }, // Public posts are accessible to everyone
           { visibility: "private", user_id }, // Private posts are accessible only to the owner
@@ -617,10 +642,16 @@ export const getPostByIdService = async (postId, user_id) => {
         {
           model: User,
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+          attributes: [
+            "id",
+            "username",
+            "gender",
+            "profile_picture",
+            "is_verified",
+          ],
           where: {
-            is_banned:false
-          }
+            is_banned: false,
+          },
         },
         {
           model: UserPreference,
@@ -639,7 +670,13 @@ export const getPostByIdService = async (postId, user_id) => {
             {
               as: "userss",
               model: User, // Include the user info for each comment
-              attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+              attributes: [
+                "id",
+                "username",
+                "gender",
+                "profile_picture",
+                "is_verified",
+              ],
             },
           ],
           attributes: ["id", "content", "likes_count"],
@@ -738,8 +775,8 @@ export const getPostFollowingService = async (id, page = 1, limit = 10) => {
         user_id: ids, // Filtrar por los IDs de los usuarios que sigues
         visibility: "public", // Puedes ajustar la visibilidad según tus requerimientos
         where: {
-          is_banned:false
-        }
+          is_banned: false,
+        },
       },
       order: [["created_at", "DESC"]], // Ordenar los posts por fecha de creación, de más reciente a más antiguo
       limit: limit, // Limitar el número de resultados
@@ -856,6 +893,8 @@ export const getPostTopicsService = async (id, page = 1, limit = 10) => {
 
 export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
   try {
+    let blockedUserIds = await userBlockByMe(user_id);
+    blockedUserIds.push(user_id);
     const user_preferences = formatResponse(await getUserPreferencess(user_id));
     const topicIds = user_preferences.map((pref) => pref.topic_id);
     const offset = (page - 1) * pageSize;
@@ -863,17 +902,23 @@ export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
     const matchingPost = await Post.findAll({
       where: {
         community_id: null,
-        user_id: { [Op.ne]: user_id },
+        user_id: { [Op.notIn]: blockedUserIds },
         visibility: "public",
       },
       include: [
         {
           model: User,
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+          attributes: [
+            "id",
+            "username",
+            "gender",
+            "profile_picture",
+            "is_verified",
+          ],
           where: {
-            is_banned:false
-          }
+            is_banned: false,
+          },
         },
         {
           model: UserPreference,
@@ -929,7 +974,7 @@ export const getPostAll = async (user_id, page = 1, pageSize = 10) => {
 
     return postsWithFilteredLikes;
   } catch (error) {
-    (error);
+    error;
     throw error;
   }
 };
@@ -961,10 +1006,16 @@ export const getPostFriends = async (user_id) => {
         {
           model: User,
           as: "post_user",
-          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+          attributes: [
+            "id",
+            "username",
+            "gender",
+            "profile_picture",
+            "is_verified",
+          ],
           where: {
-            is_banned:false
-          }
+            is_banned: false,
+          },
         },
         {
           model: UserPreference,
@@ -1010,7 +1061,7 @@ export const getPostFriends = async (user_id) => {
 
     return postsWithFilteredLikes;
   } catch (error) {
-    (error);
+    error;
   }
 };
 
@@ -1025,18 +1076,24 @@ export const getYourPost = async (user_id, page = 1, other_user_id) => {
     let pageSize = 10;
     const offset = (page - 1) * pageSize;
     let matchingPost;
-    if(other_user_id !== user_id){
+    if (other_user_id !== user_id) {
       matchingPost = await Post.findAll({
         where: {
           user_id,
-          visibility : 'public',
-          community_id: null
+          visibility: "public",
+          community_id: null,
         },
         include: [
           {
             model: User,
             as: "post_user",
-            attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+            attributes: [
+              "id",
+              "username",
+              "gender",
+              "profile_picture",
+              "is_verified",
+            ],
           },
           {
             model: UserPreference,
@@ -1072,18 +1129,23 @@ export const getYourPost = async (user_id, page = 1, other_user_id) => {
         limit: pageSize,
         offset: offset,
       });
-    }else{
+    } else {
       matchingPost = await Post.findAll({
         where: {
           user_id,
-          community_id: null
-
+          community_id: null,
         },
         include: [
           {
             model: User,
             as: "post_user",
-            attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+            attributes: [
+              "id",
+              "username",
+              "gender",
+              "profile_picture",
+              "is_verified",
+            ],
           },
           {
             model: UserPreference,
@@ -1133,7 +1195,7 @@ export const getYourPost = async (user_id, page = 1, other_user_id) => {
 
     return postsWithFilteredLikes;
   } catch (error) {
-    (error);
+    error;
   }
 };
 
@@ -1148,23 +1210,30 @@ export const getLikePost = async (user_id, page = 1, pageSize = 10) => {
       raw: true, // Devuelve datos puros sin instancias de Sequelize
     });
     const postIds = likedPosts.map((like) => like.post_id);
-    (postIds);
+    postIds;
     const offset = (page - 1) * pageSize;
-
+    let blockedUserIds = await userBlockByMe(user_id);
+    blockedUserIds.push(user_id);
     const matchingPost = await Post.findAll({
       where: {
         id: postIds,
-        user_id: { [Op.ne]: user_id },
-        visibility: 'public'
+        user_id: { [Op.notIn]: blockedUserIds },
+        visibility: "public",
       },
       include: [
         {
           model: User,
           as: "post_user",
           where: {
-            is_banned: false 
+            is_banned: false,
           },
-          attributes: ["id", "username", "gender", "profile_picture", "is_verified"],
+          attributes: [
+            "id",
+            "username",
+            "gender",
+            "profile_picture",
+            "is_verified",
+          ],
         },
         {
           model: UserPreference,
@@ -1212,6 +1281,25 @@ export const getLikePost = async (user_id, page = 1, pageSize = 10) => {
 
     return postsWithFilteredLikes;
   } catch (error) {
-    (error);
+    error;
   }
 };
+
+
+const userBlockByMe = async (user_id) => {
+  const blockedByMe = await BlockedUsers.findAll({
+    where: { blocker_user_id: user_id },
+    attributes: ["blocked_user_id"],
+  });
+  const blockedMe = await BlockedUsers.findAll({
+    where: { blocked_user_id: user_id },
+    attributes: ["blocker_user_id"],
+  });
+  
+  // Listas de usuarios bloqueados en ambas direcciones
+  const blockedByMeIds = blockedByMe.map((entry) => entry.blocked_user_id);
+  const blockedMeIds = blockedMe.map((entry) => entry.blocker_user_id);
+  
+  // Combina ambas listas de usuarios bloqueados
+  return [...new Set([...blockedByMeIds, ...blockedMeIds])];
+}

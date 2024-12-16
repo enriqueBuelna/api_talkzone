@@ -9,6 +9,7 @@ import { json, Op } from "sequelize";
 import { Follower } from "../models/follower.model.js";
 import { User } from "../models/user.model.js";
 import { Tag } from "../models/tag.models.js";
+import { BlockedUsers } from "../models/blocked_users.model.js";
 
 //USAR ESTE ENDPOINT
 export const matchmakingConnect = async (req, res) => {
@@ -139,6 +140,7 @@ const calculateCompatibility = async (user_id) => {
       where: { follower_id: user_id },
       attributes: ["followed_id"],
     });
+    let blockedUserIds = await userBlockByMe(user_id);
     const followedId = followed.map((el) => el.followed_id);
     const topicIds = user.map((pref) => pref.topic_id);
     const matchingUsers = await UserPreference.findAll({
@@ -150,6 +152,7 @@ const calculateCompatibility = async (user_id) => {
         [Op.and]: [
           { user_id: { [Op.ne]: user_id } }, // Diferente al usuario actual
           { user_id: { [Op.notIn]: followedId } }, // No esté en el arreglo de seguidos
+          { user_id: { [Op.notIn]: blockedUserIds } }, // No esté en el arreglo de seguidos
         ],
         is_active: true,
       },
@@ -301,7 +304,9 @@ const calculateCompatibilitySearch = async (user_id, idsPeople) => {
       attributes: ["followed_id"],
     });
     const followedId = followed.map((el) => el.followed_id);
+    let blockedUserIds = await userBlockByMe(user_id);
     let matchingUsers = idsPeople.filter((id) => !followedId.includes(id));
+    matchingUsers = matchingUsers.filter(id => !blockedUserIds.includes(id));
     let matchingUser = await Promise.all(
       matchingUsers.map(async (el) => {
         const userPreferences = formatResponse(await getUserPreferencess(el));
@@ -553,3 +558,21 @@ function formatResponse(data) {
 
 //   return matches;
 // }
+
+const userBlockByMe = async (user_id) => {
+  const blockedByMe = await BlockedUsers.findAll({
+    where: { blocker_user_id: user_id },
+    attributes: ["blocked_user_id"],
+  });
+  const blockedMe = await BlockedUsers.findAll({
+    where: { blocked_user_id: user_id },
+    attributes: ["blocker_user_id"],
+  });
+  
+  // Listas de usuarios bloqueados en ambas direcciones
+  const blockedByMeIds = blockedByMe.map((entry) => entry.blocked_user_id);
+  const blockedMeIds = blockedMe.map((entry) => entry.blocker_user_id);
+  
+  // Combina ambas listas de usuarios bloqueados
+  return [...new Set([...blockedByMeIds, ...blockedMeIds])];
+}
