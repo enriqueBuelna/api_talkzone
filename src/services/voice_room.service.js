@@ -295,7 +295,7 @@ export const getVoiceRooms = async (user_id, filter, page = 1, limit = 10) => {
           ],
         },
       ],
-      attributes: ["id", "room_name", "topic_id", "room_status"],
+      attributes: ["id", "room_name", "topic_id", "room_status", "type"],
       order: [
         // Ordenar por relación: host_user -> rating_ -> average_rating
         [
