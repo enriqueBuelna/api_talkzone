@@ -97,7 +97,7 @@ app.use((req, res, next) => {
 // Maneja las conexiones de Socket.io
 console.time("Sincronización Sequelize");
 sequelize
-  .sync({ force: true})
+  .sync({ force: false})
   .then(() => {
     console.timeEnd("Sincronización Sequelize");
     console.log(
