@@ -33,7 +33,7 @@ Topic.belongsTo(Topic, {
   foreignKey: {
     name:"topic_id",
     target:"id",
-    allowNull:false,
+    allowNull:true,
     onDelete:"CASCADE"
   },
   foreignKeyConstraints: true,
