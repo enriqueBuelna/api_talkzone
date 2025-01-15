@@ -41,6 +41,7 @@ export const UserPreferenceTag = sequelize.define(
       {
         unique: true,
         fields: ["user_preference_id", "tag_id"],
+        name:"user_preference_tag_unique"
       },
     ],
   }

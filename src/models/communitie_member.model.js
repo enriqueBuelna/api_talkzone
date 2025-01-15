@@ -50,6 +50,7 @@ export const CommunityMember = sequelize.define(
       {
         unique: true,
         fields: ["group_id", "user_id"],
+        name:"community_member_unique"
       },
     ],
   }

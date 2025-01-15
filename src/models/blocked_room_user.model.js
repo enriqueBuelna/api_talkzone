@@ -37,7 +37,8 @@ export const BlockedRoomUser = sequelize.define(
     indexes: [
       {
         unique: true,
-        fields: ["user_id", "room_id"], // Índice compuesto para mejorar búsquedas
+        fields: ["user_id", "room_id"], // Índice compuesto para mejorar búsquedas,
+        name:"blocked_user_user_unique"
       },
     ],
   }

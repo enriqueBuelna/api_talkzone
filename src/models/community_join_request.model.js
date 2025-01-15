@@ -57,6 +57,7 @@ export const CommunityJoinRequest = sequelize.define(
       {
         unique: true,
         fields: ["group_id", "user_id"],
+        name:"comunity_join_unique"
       },
     ],
   }

@@ -40,7 +40,8 @@ export const Follower = sequelize.define(
     indexes: [
       {
         unique: true,
-        fields: ["follower_id", "followed_id"], // Asegura que un usuario no siga a otro más de una vez
+        fields: ["follower_id", "followed_id"], // Asegura que un usuario no siga a otro más de una vez,
+        name:"follower_unique"
       },
     ],
   }
@@ -70,7 +71,7 @@ Follower.belongsTo(User, {
   foreignKeyConstraints: true,
 });
 
-User.hasMany(Follower, { foreignKey: "follower_id", as: "following" });
+// User.hasMany(Follower, { foreignKey: "follower_id", as: "following" });
 // User.hasMany(Follower, { foreignKey: "follower_id", as: "followers" });
 
 

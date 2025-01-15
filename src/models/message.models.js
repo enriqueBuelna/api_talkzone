@@ -59,6 +59,7 @@ export const Message = sequelize.define(
       {
         unique: false,
         fields: ["sender_id", "receiver_id"], // Índice compuesto para mejorar búsquedas
+        name:"message_unique"
       },
     ],
   }

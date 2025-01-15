@@ -58,6 +58,7 @@ export const RoomRating = sequelize.define(
       {
         unique: true,
         fields: ["room_id", "user_id"],
+        name:"room_rating_unique"
       },
     ],
   }

@@ -57,6 +57,7 @@ export const UserPreference = sequelize.define(
       {
         unique: true,
         fields: ["topic_id", "user_id"],
+        name: "user_preference_unique"
       },
     ],
   }

@@ -55,6 +55,7 @@ export const VoiceRoomMember = sequelize.define(
       {
         unique: true,
         fields: ["room_id", "user_id"],
+        name:"voice_room_member_unique"
       },
     ],
   }

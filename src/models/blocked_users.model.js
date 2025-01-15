@@ -38,7 +38,8 @@ export const BlockedUsers = sequelize.define(
     indexes: [
       {
         unique: true,
-        fields: ["blocker_user_id", "blocked_user_id"], // Índice único para evitar duplicados
+        fields: ["blocker_user_id", "blocked_user_id"], // Índice único para evitar duplicados,
+        name: "blocked_user_unique"
       },
     ],
   }

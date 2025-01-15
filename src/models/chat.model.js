@@ -47,7 +47,8 @@ export const Chat = sequelize.define(
     indexes: [
       {
         unique: true,
-        fields: ["user2", "user1"], // Índice compuesto para mejorar búsquedas
+        fields: ["user2", "user1"], // Índice compuesto para mejorar búsquedas,
+        name:"chat_unique"
       },
     ],
   }

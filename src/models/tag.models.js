@@ -43,6 +43,7 @@ export const Tag = sequelize.define(
 
 // Definir la relación con Topics
 Tag.belongsTo(Topic, {
+  as:"tag_topic",
   foreignKey: {
     name:"topic_id",
     target:"id",
