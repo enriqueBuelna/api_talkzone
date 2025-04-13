@@ -178,18 +178,18 @@ export const changeOnline = async (id, option) => {
     });
 
     (user);
-    // // Verificar si el usuario existe
-    // if (!user) {
-    //   throw new Error("Usuario no encontrado");
-    // }
+    // Verificar si el usuario existe
+    if (!user) {
+      throw new Error("Usuario no encontrado");
+    }
 
-    // // Actualizar el estado en línea (is_online) con la opción proporcionada
-    // user.is_online = option;
+    // Actualizar el estado en línea (is_online) con la opción proporcionada
+    user.is_online = option;
 
-    // // Guardar los cambios en la base de datos
-    // await user.save();
+    // Guardar los cambios en la base de datos
+    await user.save();
 
-    // return { message: `Usuario ${option ? "conectado" : "desconectado"}` };
+    return { message: `Usuario ${option ? "conectado" : "desconectado"}` };
   } catch (error) {
     throw new Error(`Error al cambiar el estado en línea: ${error.message}`);
   }
