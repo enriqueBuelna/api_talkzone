@@ -13,35 +13,18 @@ export const registerSocketEvents = (io) => {
 
     messagesSocket(socket, io);
     voiceRoomSocket(socket, io);
-
-    // socket.on("disconnect", async () => {
-
-    //   const user = Object.keys(users).find((user) => users[user] === socket.id);
-
-    //   if (user) {
-    //     await changeOnline(user, "offline");
-    //     delete users[user];
-    //   }
-    //   console.log("Cliente desconectado");
-    // });
     socket.on("disconnect", async () => {
-      // Encuentra el usuario que tiene este socket.id en su array
-      const user = Object.keys(users).find((user) =>
-        users[user].includes(socket.id)
-      );
-
+      console.log("Cliente desconectado:", socket.id);
+      // Lógica para eliminar el socket.id del usuario
+      const user = Object.keys(users).find((u) => users[u].includes(socket.id));
       if (user) {
-        // Elimina el socket.id del array de este usuario
         users[user] = users[user].filter((id) => id !== socket.id);
-
-        // Si ya no quedan conexiones para este usuario, cámbialo a "offline" y elimina la entrada
         if (users[user].length === 0) {
           await changeOnline(user, "offline");
           delete users[user];
+          console.log("Usuario desconectado:", user);
         }
       }
-
-      console.log("Cliente desconectado");
     });
 
     socket.on("forceDisconnect", () => {
