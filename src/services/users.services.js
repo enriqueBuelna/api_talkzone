@@ -44,7 +44,20 @@ export const registerUserService = async ({
     hashedPassword: hashedPasswordd,
   });
 
-  return nuevoUsuario.id;
+  const token = jwt.sign(
+    {
+      id: nuevoUsuario.id,
+      username: nuevoUsuario.username,
+      user_role: nuevoUsuario.user_role,
+      is_profile_complete: nuevoUsuario.is_profile_complete,
+      is_banned: nuevoUsuario.is_banned,
+    },
+    process.env.SECRET_KEY,
+    { expiresIn: "1h" }
+  );
+
+  const { password: _, ...publicUser } = nuevoUsuario.dataValues;
+  return { publicUser, token };
 };
 
 // Servicio para loguear al usuario
