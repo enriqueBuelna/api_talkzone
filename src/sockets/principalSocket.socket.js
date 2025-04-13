@@ -7,6 +7,7 @@ export const users = {};
 
 export const registerSocketEvents = (io) => {
   io.on("connection", (socket) => {
+    console.log(users);
     console.log("conection uwwu");
     userGetIn(socket);
 
