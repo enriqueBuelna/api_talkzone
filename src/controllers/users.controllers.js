@@ -118,8 +118,24 @@ export const amFollowing = async (req, res) => {
 
 export const registerUser = async (req, res) => {
   try {
-    const newUserId = await registerUserService(req.body);
-    return res.status(201).json(newUserId);
+    const { publicUser, token } = await registerUserService(req.body);
+    let user = {
+      id: publicUser.id,
+      username: publicUser.username,
+      user_role: publicUser.user_role,
+      is_profile_complete: publicUser.is_profile_complete,
+      is_banned: publicUser.is_banned,
+    };
+    res
+      .cookie("access_token", token, {
+        httpOnly: true,
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60,
+      })
+      .json({
+        user,
+        token,
+      });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
