@@ -18,23 +18,23 @@ import {
 import { Chat } from "../models/chat.model.js";
 
 export const unblockUser = async (req, res) => {
-  let {blocker_user_id, blocked_user_id} = req.body;
+  let { blocker_user_id, blocked_user_id } = req.body;
   try {
     let block = await BlockedUsers.findOne({
       where: {
         blocked_user_id,
-        blocker_user_id
-      }
-    })
+        blocker_user_id,
+      },
+    });
 
-    if(block){
+    if (block) {
       await block.destroy();
     }
     return res.status(201).json(true);
   } catch (error) {
     console.log(error);
   }
-}
+};
 
 export const getBlockUsers = async (req, res) => {
   let { user_id } = req.query;
@@ -182,7 +182,19 @@ export const loginUser = async (req, res) => {
         token,
       });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Manejar diferentes tipos de errores
+    let statusCode = 500;
+    let message = "Error interno del servidor";
+
+    if (
+      error.message === "Usuario no encontrado" ||
+      error.message === "Password incorrecto"
+    ) {
+      statusCode = 401;
+      message = "Credenciales inválidas";
+    }
+
+    res.status(statusCode).json({ message });
   }
 };
 
